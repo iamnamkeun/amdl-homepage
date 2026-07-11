@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AM&D Lab — Applied Mechanics and Design Laboratory, Sogang University</title>
+<meta name="description" content="서강대학교 기계공학과 응용역학 및 설계 연구실 (AM&D Lab). Bone conduction, brain stimulation, exosuit, shoulder mechanics, wildfire research.">
+<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <img src="assets/img/logo.png" alt="AM&amp;D Lab logo">
+      <span class="brand-text">AM&amp;D <em>Lab</em></span>
+    </a>
+    <nav class="menu" id="menu">
+      <a href="index.html" class="active">Home</a>
+      <div class="dropdown">
+        <a href="research.html">Research <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+        <div class="dropdown-panel">
+          <a href="research-bone-conduction.html">Bone Conduction</a>
+          <a href="research-brain.html">Brain</a>
+          <a href="research-exosuit.html">Exosuit</a>
+          <a href="research-shoulder-mechanics.html">Shoulder Mechanics</a>
+          <a href="research-wildfire.html">Wildfire</a>
+        </div>
+      </div>
+      <a href="people.html">People</a>
+      <a href="publications.html">Publications</a>
+      <a href="gallery.html">Gallery</a>
+      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr">Contact</a>
+    </nav>
+    <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+
+<section class="hero">
+  <canvas id="wave-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner container">
+    <p class="eyebrow reveal">Sogang University · Mechanical Engineering</p>
+    <h1 class="reveal" style="--d:.08s">Applied Mechanics<br>&amp; Design <span class="accent">Lab</span></h1>
+    <p class="hero-lead reveal" style="--d:.16s">We are AMDL. 실험, 시뮬레이션, AI 분석을 결합해 복잡한 구조·역학적 거동을
+    더 안전하고 스마트한 기술로 바꾸는 연구를 합니다.</p>
+    <p class="hero-lead-en reveal" style="--d:.2s">By combining experiments, simulation, and AI-driven analysis, we translate
+    complex structural and mechanical behavior into practical technologies for safer, smarter, and more resilient systems.</p>
+    <div class="hero-actions reveal" style="--d:.24s">
+      <a class="btn btn-accent" href="research.html">Explore Research</a>
+      <a class="btn btn-ghost" href="people.html">Meet the Team</a>
+    </div>
+    <div class="hero-stats reveal" style="--d:.32s">
+      <div><strong>5</strong><span>Research Areas</span></div>
+      <div><strong>24+</strong><span>Publications</span></div>
+      <div><strong>14</strong><span>Team Members</span></div>
+    </div>
+  </div>
+  <div class="hero-scroll" aria-hidden="true"><span></span></div>
+</section>
+
+<section class="section" id="about">
+  <div class="container about-grid">
+    <div class="about-text reveal">
+      <p class="eyebrow">About AMDL</p>
+      <h2>역학의 언어로, <br>사람을 위한 기술을 설계합니다</h2>
+      <p>Applied Mechanics and Design Laboratory는 응용역학과 설계 연구를 통해 혁신적인
+      공학 솔루션을 만들어 갑니다. 사람 머리 유한요소 모델 기반의 청각·뇌 연구에서부터
+      AI 기반 엑소수트 최적화, 어깨 생체역학, 산불 예측까지 — 물리 기반 시뮬레이션과
+      인공지능을 넘나들며 실용적인 기술을 연구합니다.</p>
+      <a class="text-link" href="mailto:nkim@sogang.ac.kr">함께 연구하고 싶다면 → nkim@sogang.ac.kr</a>
+    </div>
+    <div class="about-video reveal" style="--d:.1s">
+      <div class="video-frame">
+        <iframe src="https://www.youtube-nocookie.com/embed/fnAD00OuYrc" title="AM&D Lab 소개 영상"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="research">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Research</p>
+      <h2>다섯 가지 질문, 하나의 접근</h2>
+      <p class="section-sub">모델링 · 시뮬레이션 · 실험 · AI — 서로 다른 문제를 같은 깊이로 파고듭니다.</p>
+    </div>
+    <div class="rcard-grid">
+      <a class="rcard reveal" href="research-bone-conduction.html" style="--d:0.0s">
+        <div class="rcard-img"><img src="assets/img/research_00.png" alt="Bone Conduction" loading="lazy"></div>
+        <div class="rcard-body">
+          <span class="rcard-num">01</span>
+          <h3>Bone Conduction</h3>
+          <p>이론적 연구 기반 — 사람 머리 유한요소 모델을 활용한 골전도 청각 메커니즘 규명</p>
+          <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        </div>
+      </a>
+      <a class="rcard reveal" href="research-brain.html" style="--d:0.07s">
+        <div class="rcard-img"><img src="assets/img/research_01.png" alt="Brain" loading="lazy"></div>
+        <div class="rcard-body">
+          <span class="rcard-num">02</span>
+          <h3>Brain</h3>
+          <p>알츠하이머 치료를 위한 진동 자극 방법론의 개발과 검증</p>
+          <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        </div>
+      </a>
+      <a class="rcard reveal" href="research-exosuit.html" style="--d:0.14s">
+        <div class="rcard-img"><img src="assets/img/research_02.png" alt="Exosuit" loading="lazy"></div>
+        <div class="rcard-body">
+          <span class="rcard-num">03</span>
+          <h3>Exosuit</h3>
+          <p>인공지능을 활용한 엑소수트의 모션 예측과 최적화</p>
+          <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        </div>
+      </a>
+      <a class="rcard reveal" href="research-shoulder-mechanics.html" style="--d:0.21000000000000002s">
+        <div class="rcard-img"><img src="assets/img/research_03.png" alt="Shoulder Mechanics" loading="lazy"></div>
+        <div class="rcard-body">
+          <span class="rcard-num">04</span>
+          <h3>Shoulder Mechanics</h3>
+          <p>생체역학 실험 장치 설계 및 어깨 질환 관련 시뮬레이션</p>
+          <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        </div>
+      </a>
+      <a class="rcard reveal" href="research-wildfire.html" style="--d:0.28s">
+        <div class="rcard-img"><img src="assets/img/research_04.jpg" alt="Wildfire" loading="lazy"></div>
+        <div class="rcard-body">
+          <span class="rcard-num">05</span>
+          <h3>Wildfire</h3>
+          <p>산불 특성 데이터 기반 최적화 및 예측</p>
+          <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="publications">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Selected Publications</p>
+      <h2>최근 연구 성과</h2>
+    </div>
+    <div class="pub-mini-list">
+      <a class="pub-mini reveal" style="--d:0.0s" href="publications.html">
+        <span class="pub-mini-year">2025</span>
+        <div>
+          <h4>Simulations of Low-Frequency Vibration Pattern at the Inner Ear for Activation of the Vestibular System</h4>
+          <p><em>Hearing Research</em> · Vol. 470, 109503; 2025</p>
+        </div>
+      </a>
+      <a class="pub-mini reveal" style="--d:0.07s" href="publications.html">
+        <span class="pub-mini-year">2025</span>
+        <div>
+          <h4>Automated High-Fidelity 3D Reconstruction of Middle-Ear Ossicles from Low-Resolution Clinical CT using a Deep Learning Pipeline</h4>
+          <p><em>Hearing Research</em> · Vol. 469, 109492; 2025</p>
+        </div>
+      </a>
+      <a class="pub-mini reveal" style="--d:0.14s" href="publications.html">
+        <span class="pub-mini-year">2025</span>
+        <div>
+          <h4>Exploring the Effect of Cadaver Head Fixation in Bone Conduction Hearing: Insights from Finite Element Modeling</h4>
+          <p><em>Hearing Research</em> · Vol. 465, 109354; 2025</p>
+        </div>
+      </a>
+      <a class="pub-mini reveal" style="--d:0.21000000000000002s" href="publications.html">
+        <span class="pub-mini-year">2025</span>
+        <div>
+          <h4>Exploring the impact of force direction and phase on bone conduction hearing with bone conduction actuator</h4>
+          <p><em>Hearing Research</em> · Vol. 456, 109164; 2025</p>
+        </div>
+      </a>
+    </div>
+    <div class="center reveal"><a class="btn btn-dark" href="publications.html">전체 논문 보기</a></div>
+  </div>
+</section>
+
+<section class="section section-contact" id="contact">
+  <div class="container contact-grid">
+    <div class="reveal">
+      <p class="eyebrow">Contact</p>
+      <h2>찾아오시는 길</h2>
+      <ul class="contact-list">
+        <li><span>Address</span>04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호</li>
+        <li><span>Office</span>AS 611 (교수 연구실) · AS 608 &amp; 609 (연구실)</li>
+        <li><span>Email</span><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></li>
+      </ul>
+      <a class="btn btn-accent" href="https://map.naver.com/p/search/서강대학교%20아담샬관" target="_blank" rel="noopener">지도에서 보기 ↗</a>
+    </div>
+    <div class="contact-card reveal" style="--d:.1s">
+      <h3>Join AMDL</h3>
+      <p>대학원 진학 및 학부연구(URECA)에 관심 있는 학생은
+      언제든 이메일로 연락 주세요. 연구 주제와 진행 중인 프로젝트를 소개해 드립니다.</p>
+      <a class="text-link" href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo"><img src="assets/img/logo.png" alt=""><span>AM&amp;D <em>Lab</em></span></div>
+      <p>Applied Mechanics and Design Laboratory<br>Department of Mechanical Engineering, Sogang University</p>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="research.html">Research</a>
+      <a href="people.html">People</a>
+      <a href="publications.html">Publications</a>
+      <a href="gallery.html">Gallery</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <p>04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호<br>Adam Schall Hall (AS) 608 & 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea</p>
+      <p>Office AS 611 · Lab AS 608 &amp; 609<br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom"><div class="container">© 2026 Applied Mechanics &amp; Design Laboratory, Sogang University. All rights reserved.</div></div>
+</footer>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
