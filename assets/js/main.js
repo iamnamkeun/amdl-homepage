@@ -116,6 +116,19 @@
     draw();
   }
 
+  /* ---------- scroll cue (all pages) ---------- */
+  var cue = document.querySelector('.scroll-cue');
+  if (cue) {
+    var cueScroll = function () {
+      var nearTop = window.scrollY < 60;
+      var canScroll = document.body.scrollHeight > window.innerHeight + 120;
+      cue.classList.toggle('hide', !nearTop || !canScroll);
+    };
+    window.addEventListener('scroll', cueScroll, { passive: true });
+    window.addEventListener('resize', cueScroll);
+    cueScroll();
+  }
+
   /* ---------- hero news accordion ---------- */
   document.querySelectorAll('.hero-news-item').forEach(function (item) {
     item.addEventListener('click', function () {
