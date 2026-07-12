@@ -116,6 +116,14 @@
     draw();
   }
 
+  /* ---------- hero news accordion ---------- */
+  document.querySelectorAll('.hero-news-item').forEach(function (item) {
+    item.addEventListener('click', function () {
+      var open = item.classList.toggle('open');
+      item.setAttribute('aria-expanded', open);
+    });
+  });
+
   /* ---------- publications year filter ---------- */
   var pubList = document.getElementById('pub-list');
   if (pubList) {
