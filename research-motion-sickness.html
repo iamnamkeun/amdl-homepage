@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>산불 Wildfire — AM&D Lab</title>
-<meta name="description" content="AM&D Lab Wildfire (산불) 연구 소개">
+<title>멀미 Motion Sickness — AM&D Lab</title>
+<meta name="description" content="AM&D Lab Motion Sickness (멀미) 연구 소개">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,8 +46,8 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="eyebrow"><span data-i18n data-en="Research">연구</span> · <span data-i18n data-en="산불">Wildfire</span></p>
-    <h1><span data-i18n data-en="Wildfire">산불</span></h1>
+    <p class="eyebrow"><span data-i18n data-en="Research">연구</span> · <span data-i18n data-en="멀미">Motion Sickness</span></p>
+    <h1><span data-i18n data-en="Motion Sickness">멀미</span></h1>
     
   </div>
 </section>
@@ -55,15 +55,16 @@
 <section class="section intro-section">
   <div class="container intro-grid">
     <div class="intro-lead reveal">
-      <p><span data-i18n data-en="Wildfire is a complex phenomenon coupling weather, terrain, and fuel. From burn-area data and spread predictions, we automate indices that assess how vulnerable a facility is, and build surrogate models that predict local wind fields — data-and-optimization research for disaster preparedness.">산불은 기상·지형·연료가 얽힌 복잡한 현상입니다. 우리는 산불 피해지 데이터와 확산 예측 정보를 바탕으로, 시설물이 산불에 얼마나 취약한지 평가하는 지표를 자동화하고, 국소 지역의 바람장을 예측하는 대리 모델(surrogate model)을 만듭니다. 데이터와 최적화로 재난에 대비하는 연구예요.</span></p>
-
+      <p><span data-i18n data-en="Motion sickness arises when the motion your eyes see conflicts with what the inner-ear vestibular system feels. We model the vestibular organs (semicircular canals and cupula) with finite elements to analyze how different motions generate stimuli, and study active ways to reduce them — connecting to passenger comfort in autonomous and electric vehicles.">멀미는 눈으로 보는 움직임과 귓속 전정기관이 느끼는 움직임이 어긋날 때 생깁니다. 우리는 전정기관(반고리관·쿠풀라)을 유한요소로 모델링해 다양한 움직임에서 어떻게 자극이 발생하는지 분석하고, 이를 줄이는 능동형 저감 방법을 연구합니다. 자율주행·전기차 실내의 편안함으로 이어지는 연구예요.</span></p>
+      <a class="related-link" href="research-bone-conduction.html"><span data-i18n data-en="Related">관련 연구</span>: <span data-i18n data-en="Bone Conduction">골전도</span> →</a>
     </div>
     <div class="intro-points reveal" style="--d:.1s">
       <h3><span data-i18n data-en="What you’ll work on">이런 걸 하게 됩니다</span></h3>
       <ul class="dot-list">
-        <li><span data-i18n data-en="Optimization and automation of facility wildfire-vulnerability indices">시설물 산불 취약성 평가지표 최적화 및 자동화</span></li>
-        <li><span data-i18n data-en="Local wind-field prediction reflecting wildfire characteristics">산불 특성을 반영한 국소 지역 바람장 예측</span></li>
-        <li><span data-i18n data-en="Weather surrogate models built from burn-area data">산불 피해지 정보 기반 기상정보 대리 모델 구축</span></li>
+        <li><span data-i18n data-en="FE modeling of the vestibular organs (canals and cupula)">전정기관(반고리관·쿠풀라) 유한요소 모델링</span></li>
+        <li><span data-i18n data-en="Deformation and dynamics of the vestibular system under various head motions">다양한 머리 움직임에 따른 전정기관 변형·거동 해석</span></li>
+        <li><span data-i18n data-en="Deriving sickness-inducing stimulus inputs and designing reduction algorithms">멀미를 유발하는 자극 입력값 도출 및 저감 알고리즘 설계</span></li>
+        <li><span data-i18n data-en="Development of an active motion-sickness-reduction device">능동형 멀미 저감 디바이스 개발</span></li>
       </ul>
     </div>
   </div>
@@ -73,31 +74,19 @@
   <div class="container topic-list">
     <div class="topic reveal">
       <div class="topic-head"><span class="topic-num">01</span>
-        <div><h2><span data-i18n data-en="Optimizing facility vulnerability indices">시설물의 산불 취약성 평가지표 최적화</span></h2><p class="topic-sub"><span data-i18n data-en="We turn a facility’s wildfire vulnerability into a quantitative index and compute it automatically.">건물·시설이 산불에 취약한 정도를 정량 지표로 만들고 자동으로 계산합니다.</span></p></div>
+        <div><h2><span data-i18n data-en="Cupula deformation under different rotations">다양한 회전 조건에 따른 쿠풀라 변형 거동 분석</span></h2><p class="topic-sub"><span data-i18n data-en="FE analysis of how the cupula in the semicircular canals deforms as the head rotates.">머리가 회전할 때 반고리관 속 쿠풀라(cupula)가 어떻게 변형되는지 유한요소로 해석합니다.</span></p></div>
       </div>
-      <div class="fig-grid cols-3">
-          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_wildfire_00.png" alt="Optimizing facility vulnerability indices" loading="lazy"></figure>
-          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_wildfire_01.jpg" alt="Optimizing facility vulnerability indices" loading="lazy"></figure>
-          <figure class="fig reveal" style="--d:0.1s"><img src="assets/img/research_wildfire_02.jpg" alt="Optimizing facility vulnerability indices" loading="lazy"></figure>
-          <figure class="fig reveal" style="--d:0.15000000000000002s"><img src="assets/img/research_wildfire_03.jpg" alt="Optimizing facility vulnerability indices" loading="lazy"></figure>
+      <div class="fig-grid cols-2">
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_02.jpg" alt="Cupula deformation under different rotations" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_bone-conduction_03.jpg" alt="Cupula deformation under different rotations" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
       <div class="topic-head"><span class="topic-num">02</span>
-        <div><h2><span data-i18n data-en="Local wind-field prediction">산불 특성을 반영한 국소 지역 바람장 예측</span></h2><p class="topic-sub"><span data-i18n data-en="We rapidly predict the local wind field — a key driver of wildfire spread.">산불 확산의 핵심 변수인 국소 바람장을 빠르게 예측합니다.</span></p></div>
+        <div><h2><span data-i18n data-en="Vestibular motion generation and stimulus-input algorithm">전정기관 모션 생성 및 자극 입력값 도출 알고리즘 설계</span></h2><p class="topic-sub"><span data-i18n data-en="Using the vestibular model, we quantify sickness-inducing inputs and design algorithms to reduce them.">전정기관 모델로 멀미를 유발하는 자극 입력을 정량화하고, 이를 줄이는 알고리즘을 설계합니다.</span></p></div>
       </div>
-      <div class="fig-grid cols-2">
-          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_wildfire_04.png" alt="Local wind-field prediction" loading="lazy"></figure>
-          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_wildfire_05.jpg" alt="Local wind-field prediction" loading="lazy"></figure>
-      </div>
-    </div>
-    <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">03</span>
-        <div><h2><span data-i18n data-en="Weather surrogate model from real burn data">실제 산불 피해지 정보 기반 기상정보 대리 모델 구축</span></h2><p class="topic-sub"><span data-i18n data-en="We train a weather surrogate model on real burn-area data to speed up prediction.">실제 피해지 데이터로 기상 대리 모델을 학습시켜 예측을 빠르게 만듭니다.</span></p></div>
-      </div>
-      <div class="fig-grid cols-2">
-          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_wildfire_06.png" alt="Weather surrogate model from real burn data" loading="lazy"></figure>
-          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_wildfire_07.jpg" alt="Weather surrogate model from real burn data" loading="lazy"></figure>
+      <div class="fig-grid cols-1">
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_04.png" alt="Vestibular motion generation and stimulus-input algorithm" loading="lazy"></figure>
       </div>
     </div>
   </div>
@@ -105,9 +94,9 @@
 
 <section class="pn-nav">
   <div class="container pn-grid">
-    <a href="research-shoulder-mechanics.html" class="pn prev"><span>← <span data-i18n data-en="Previous">이전</span></span><strong><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span></strong></a>
+    <a href="research-bone-conduction.html" class="pn prev"><span>← <span data-i18n data-en="Previous">이전</span></span><strong><span data-i18n data-en="Bone Conduction">골전도</span></strong></a>
     <a href="research.html" class="pn all"><strong><span data-i18n data-en="All Research">전체 연구</span></strong></a>
-    <a href="research-bone-conduction.html" class="pn next"><span><span data-i18n data-en="Next">다음</span> →</span><strong><span data-i18n data-en="Bone Conduction">골전도</span></strong></a>
+    <a href="research-brain.html" class="pn next"><span><span data-i18n data-en="Next">다음</span> →</span><strong><span data-i18n data-en="Brain">뇌</span></strong></a>
   </div>
 </section>
 <footer class="footer">

@@ -2,6 +2,30 @@
 (function () {
   'use strict';
 
+  /* ---------- language toggle (Korean default, English on demand) ---------- */
+  var LANG_KEY = 'amdl-lang';
+  function applyLang(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      if (!el.hasAttribute('data-ko')) el.setAttribute('data-ko', el.innerHTML);
+      el.innerHTML = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-ko');
+    });
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      b.textContent = lang === 'en' ? '한국어' : 'ENG';
+    });
+  }
+  var savedLang = 'ko';
+  try { savedLang = localStorage.getItem(LANG_KEY) || 'ko'; } catch (e) {}
+  applyLang(savedLang);
+  document.querySelectorAll('.lang-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var cur = document.documentElement.lang === 'en' ? 'en' : 'ko';
+      var next = cur === 'en' ? 'ko' : 'en';
+      try { localStorage.setItem(LANG_KEY, next); } catch (e) {}
+      applyLang(next);
+    });
+  });
+
   /* ---------- nav ---------- */
   var nav = document.getElementById('nav');
   var hero = document.querySelector('.hero, .page-hero');

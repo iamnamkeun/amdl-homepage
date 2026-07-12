@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Brain — AM&D Lab</title>
-<meta name="description" content="AM&D Lab Brain (뇌) 연구">
+<title>뇌 Brain — AM&D Lab</title>
+<meta name="description" content="AM&D Lab Brain (뇌) 연구 소개">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,22 +20,24 @@
       <span class="brand-text">AM&amp;D <em>Lab</em></span>
     </a>
     <nav class="menu" id="menu">
-      <a href="index.html">Home</a>
+      <a href="index.html"><span data-i18n data-en="Home">홈</span></a>
       <div class="dropdown open-active">
-        <a href="research.html" class="active">Research <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+        <a href="research.html" class="active"><span data-i18n data-en="Research">연구</span> <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
         <div class="dropdown-panel">
-          <a href="research-bone-conduction.html">Bone Conduction</a>
-          <a href="research-brain.html">Brain</a>
-          <a href="research-exosuit.html">Exosuit</a>
-          <a href="research-shoulder-mechanics.html">Shoulder Mechanics</a>
-          <a href="research-wildfire.html">Wildfire</a>
+          <a href="research-bone-conduction.html"><span data-i18n data-en="Bone Conduction">골전도</span></a>
+          <a href="research-motion-sickness.html"><span data-i18n data-en="Motion Sickness">멀미</span></a>
+          <a href="research-brain.html"><span data-i18n data-en="Brain">뇌</span></a>
+          <a href="research-exosuit.html"><span data-i18n data-en="Exosuit">엑소수트</span></a>
+          <a href="research-shoulder-mechanics.html"><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span></a>
+          <a href="research-wildfire.html"><span data-i18n data-en="Wildfire">산불</span></a>
         </div>
       </div>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
-      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr">Contact</a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
+      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr"><span data-i18n data-en="Contact">문의</span></a>
     </nav>
+    <button class="lang-btn" aria-label="언어 전환 / switch language">ENG</button>
     <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -44,55 +46,77 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="eyebrow">Research · 뇌</p>
-    <h1>Brain</h1>
-    <p class="page-hero-sub">알츠하이머 치료를 위한 진동 자극 방법론의 개발과 검증</p>
+    <p class="eyebrow"><span data-i18n data-en="Research">연구</span> · <span data-i18n data-en="뇌">Brain</span></p>
+    <h1><span data-i18n data-en="Brain">뇌</span></h1>
+    
   </div>
 </section>
 
-<section class="section">
+<section class="section intro-section">
+  <div class="container intro-grid">
+    <div class="intro-lead reveal">
+      <p><span data-i18n data-en="Vibration stimulation is emerging as a candidate therapy for Alzheimer’s disease. Using whole-head FE models and multiphysics analysis, we simulate how vibration reaches brain tissue and cerebrospinal fluid (CSF), and which sites are most effective — building the design basis for non-invasive brain therapy.">알츠하이머 치료법의 하나로 ‘진동 자극’이 주목받고 있습니다. 우리는 사람 머리 FE 모델과 다중물리 해석으로 진동 자극이 뇌 조직과 뇌척수액(CSF)에 어떻게 전달되는지, 어느 위치를 자극해야 효과적인지를 시뮬레이션합니다. 비침습적 뇌 치료의 설계 근거를 만드는 연구입니다.</span></p>
+
+    </div>
+    <div class="intro-points reveal" style="--d:.1s">
+      <h3><span data-i18n data-en="What you’ll work on">이런 걸 하게 됩니다</span></h3>
+      <ul class="dot-list">
+        <li><span data-i18n data-en="Whole-head FE model development for brain-stimulation simulation">뇌 자극 시뮬레이션을 위한 사람 머리 유한요소 모델 개발</span></li>
+        <li><span data-i18n data-en="Multiphysics simulation of brain tissue and cerebrospinal fluid">다중물리 해석을 활용한 뇌·뇌척수액 시뮬레이션</span></li>
+        <li><span data-i18n data-en="Energy transfer into the brain for different stimulation sites and combinations">자극 위치·조합에 따른 뇌 내 에너지 전달 특성 분석</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
   <div class="container topic-list">
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">01</span><h2>다양한 위치에서 진동 자극과 자극 위치 조합에 따른 뇌 내 에너지 전달 특성 분석</h2></div>
+      <div class="topic-head"><span class="topic-num">01</span>
+        <div><h2><span data-i18n data-en="Energy transfer for stimulation-site combinations">자극 위치·조합에 따른 뇌 내 에너지 전달 특성 분석</span></h2><p class="topic-sub"><span data-i18n data-en="We compare vibration energy delivered into the brain across stimulation sites and combinations.">자극 위치와 조합을 바꿔가며 뇌 안으로 전달되는 진동 에너지를 비교합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-3">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_brain_00.jpg" alt="다양한 위치에서 진동 자극과 자극 위치 조합에 따른 뇌 내 에너지 전달 특성 분석" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_brain_01.png" alt="다양한 위치에서 진동 자극과 자극 위치 조합에 따른 뇌 내 에너지 전달 특성 분석" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.12s"><img src="assets/img/research_brain_02.png" alt="다양한 위치에서 진동 자극과 자극 위치 조합에 따른 뇌 내 에너지 전달 특성 분석" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_brain_00.jpg" alt="Energy transfer for stimulation-site combinations" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_brain_01.png" alt="Energy transfer for stimulation-site combinations" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.1s"><img src="assets/img/research_brain_02.png" alt="Energy transfer for stimulation-site combinations" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">02</span><h2>사람머리 유한요소 모델과 다중물리해석 기법을 활용한 뇌척수액 시뮬레이션</h2></div>
+      <div class="topic-head"><span class="topic-num">02</span>
+        <div><h2><span data-i18n data-en="CSF simulation with a multiphysics head model">사람 머리 FE 모델과 다중물리 해석을 활용한 뇌척수액 시뮬레이션</span></h2><p class="topic-sub"><span data-i18n data-en="We analyze the flow and pressure of the cerebrospinal fluid surrounding the brain with multiphysics methods.">뇌를 감싼 뇌척수액의 유동과 압력을 다중물리 기법으로 해석합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_brain_03.png" alt="사람머리 유한요소 모델과 다중물리해석 기법을 활용한 뇌척수액 시뮬레이션" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_brain_04.png" alt="사람머리 유한요소 모델과 다중물리해석 기법을 활용한 뇌척수액 시뮬레이션" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_brain_03.png" alt="CSF simulation with a multiphysics head model" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_brain_04.png" alt="CSF simulation with a multiphysics head model" loading="lazy"></figure>
       </div>
     </div>
   </div>
 </section>
+
 <section class="pn-nav">
   <div class="container pn-grid">
-    <a href="research-bone-conduction.html" class="pn prev"><span>← Previous</span><strong>Bone Conduction</strong></a>
-    <a href="research.html" class="pn all"><strong>All Research</strong></a>
-    <a href="research-exosuit.html" class="pn next"><span>Next →</span><strong>Exosuit</strong></a>
+    <a href="research-motion-sickness.html" class="pn prev"><span>← <span data-i18n data-en="Previous">이전</span></span><strong><span data-i18n data-en="Motion Sickness">멀미</span></strong></a>
+    <a href="research.html" class="pn all"><strong><span data-i18n data-en="All Research">전체 연구</span></strong></a>
+    <a href="research-exosuit.html" class="pn next"><span><span data-i18n data-en="Next">다음</span> →</span><strong><span data-i18n data-en="Exosuit">엑소수트</span></strong></a>
   </div>
 </section>
 <footer class="footer">
   <div class="container footer-grid">
     <div class="footer-brand">
       <div class="footer-logo"><img src="assets/img/logo.png" alt=""><span>AM&amp;D <em>Lab</em></span></div>
-      <p>Applied Mechanics and Design Laboratory<br>Department of Mechanical Engineering, Sogang University</p>
+      <p><span data-i18n data-en="Applied Mechanics and Design Laboratory">응용역학 및 설계 연구실</span><br><span data-i18n data-en="Dept. of Mechanical Engineering, Sogang University">서강대학교 기계공학과</span></p>
     </div>
     <div class="footer-col">
-      <h4>Explore</h4>
-      <a href="research.html">Research</a>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
+      <h4><span data-i18n data-en="Explore">바로가기</span></h4>
+      <a href="research.html"><span data-i18n data-en="Research">연구</span></a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
     </div>
     <div class="footer-col">
-      <h4>Contact</h4>
-      <p>04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호<br>Adam Schall Hall (AS) 608 & 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea</p>
-      <p>Office AS 611 · Lab AS 608 &amp; 609<br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
+      <h4><span data-i18n data-en="Contact">연락처</span></h4>
+      <p><span data-i18n data-en="Adam Schall Hall (AS) 608 &amp; 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea">04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호</span></p>
+      <p><span data-i18n data-en="Office AS 611 · Lab AS 608 &amp; 609">교수 연구실 AS 611 · 실험실 AS 608 & 609</span><br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
     </div>
   </div>
   <div class="footer-bottom"><div class="container">© 2026 Applied Mechanics &amp; Design Laboratory, Sogang University. All rights reserved.</div></div>

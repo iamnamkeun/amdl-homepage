@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Exosuit — AM&D Lab</title>
-<meta name="description" content="AM&D Lab Exosuit (엑소수트) 연구">
+<title>엑소수트 Exosuit — AM&D Lab</title>
+<meta name="description" content="AM&D Lab Exosuit (엑소수트) 연구 소개">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,22 +20,24 @@
       <span class="brand-text">AM&amp;D <em>Lab</em></span>
     </a>
     <nav class="menu" id="menu">
-      <a href="index.html">Home</a>
+      <a href="index.html"><span data-i18n data-en="Home">홈</span></a>
       <div class="dropdown open-active">
-        <a href="research.html" class="active">Research <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+        <a href="research.html" class="active"><span data-i18n data-en="Research">연구</span> <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
         <div class="dropdown-panel">
-          <a href="research-bone-conduction.html">Bone Conduction</a>
-          <a href="research-brain.html">Brain</a>
-          <a href="research-exosuit.html">Exosuit</a>
-          <a href="research-shoulder-mechanics.html">Shoulder Mechanics</a>
-          <a href="research-wildfire.html">Wildfire</a>
+          <a href="research-bone-conduction.html"><span data-i18n data-en="Bone Conduction">골전도</span></a>
+          <a href="research-motion-sickness.html"><span data-i18n data-en="Motion Sickness">멀미</span></a>
+          <a href="research-brain.html"><span data-i18n data-en="Brain">뇌</span></a>
+          <a href="research-exosuit.html"><span data-i18n data-en="Exosuit">엑소수트</span></a>
+          <a href="research-shoulder-mechanics.html"><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span></a>
+          <a href="research-wildfire.html"><span data-i18n data-en="Wildfire">산불</span></a>
         </div>
       </div>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
-      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr">Contact</a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
+      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr"><span data-i18n data-en="Contact">문의</span></a>
     </nav>
+    <button class="lang-btn" aria-label="언어 전환 / switch language">ENG</button>
     <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -44,68 +46,94 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="eyebrow">Research · 엑소수트</p>
-    <h1>Exosuit</h1>
-    <p class="page-hero-sub">인공지능을 활용한 엑소수트의 모션 예측과 최적화</p>
+    <p class="eyebrow"><span data-i18n data-en="Research">연구</span> · <span data-i18n data-en="엑소수트">Exosuit</span></p>
+    <h1><span data-i18n data-en="Exosuit">엑소수트</span></h1>
+    
   </div>
 </section>
 
-<section class="section">
+<section class="section intro-section">
+  <div class="container intro-grid">
+    <div class="intro-lead reveal">
+      <p><span data-i18n data-en="An exosuit must anticipate the wearer’s motion and assist with the right force at the right time. We use sensor data and AI to predict gait and required assistive force, and optimize where and how many sensors to place — improving wearables for rehabilitation and strength assistance.">엑소수트(입는 로봇)는 착용자의 움직임을 미리 알아채고 알맞은 힘으로 보조해야 합니다. 우리는 센서 데이터와 인공지능으로 보행 동작과 필요한 보조힘을 예측하고, 센서를 어디에 몇 개 붙일지까지 최적화합니다. 재활·근력 보조 웨어러블의 성능을 끌어올리는 연구예요.</span></p>
+
+    </div>
+    <div class="intro-points reveal" style="--d:.1s">
+      <h3><span data-i18n data-en="What you’ll work on">이런 걸 하게 됩니다</span></h3>
+      <ul class="dot-list">
+        <li><span data-i18n data-en="Sensor-based prediction of lower-limb motion and assistive force">센서 정보 기반 하지 동작 및 보조힘 예측</span></li>
+        <li><span data-i18n data-en="Optimization of sensor placement and count">센서 위치·개수 최적화</span></li>
+        <li><span data-i18n data-en="Deep-learning correction of sensor hysteresis">딥러닝을 활용한 센서 히스테리시스 보정</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
   <div class="container topic-list">
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">01</span><h2>최적 센서 조합 탐색</h2></div>
+      <div class="topic-head"><span class="topic-num">01</span>
+        <div><h2><span data-i18n data-en="Searching for the optimal sensor set">최적 센서 조합 탐색</span></h2><p class="topic-sub"><span data-i18n data-en="We find the sensor combination that maximizes prediction accuracy with the fewest sensors.">최소한의 센서로 최대 예측 성능을 내는 조합을 찾습니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_00.png" alt="최적 센서 조합 탐색" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_exosuit_01.png" alt="최적 센서 조합 탐색" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_00.png" alt="Searching for the optimal sensor set" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_exosuit_01.png" alt="Searching for the optimal sensor set" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">02</span><h2>딥러닝을 활용한 센서 히스테리시스 보정</h2></div>
+      <div class="topic-head"><span class="topic-num">02</span>
+        <div><h2><span data-i18n data-en="Deep-learning hysteresis correction">딥러닝을 활용한 센서 히스테리시스 보정</span></h2><p class="topic-sub"><span data-i18n data-en="We correct sensor-signal hysteresis with deep learning.">센서 신호의 이력 오차(히스테리시스)를 딥러닝으로 교정합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_02.png" alt="딥러닝을 활용한 센서 히스테리시스 보정" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_exosuit_03.png" alt="딥러닝을 활용한 센서 히스테리시스 보정" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_02.png" alt="Deep-learning hysteresis correction" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_exosuit_03.png" alt="Deep-learning hysteresis correction" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">03</span><h2>발목 유한요소 모델을 활용한 발목 앵커 위치 최적화</h2></div>
+      <div class="topic-head"><span class="topic-num">03</span>
+        <div><h2><span data-i18n data-en="Ankle FE model for anchor-position optimization">발목 유한요소 모델을 활용한 앵커 위치 최적화</span></h2><p class="topic-sub"><span data-i18n data-en="An ankle FE model optimizes the anchor position of the assistive device.">발목 유한요소 모델로 보조 장치의 부착(앵커) 위치를 최적화합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_04.png" alt="발목 유한요소 모델을 활용한 발목 앵커 위치 최적화" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_exosuit_05.png" alt="발목 유한요소 모델을 활용한 발목 앵커 위치 최적화" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_04.png" alt="Ankle FE model for anchor-position optimization" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_exosuit_05.png" alt="Ankle FE model for anchor-position optimization" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">04</span><h2>보행 보조를 위한 엑소수트 모션 예측</h2></div>
+      <div class="topic-head"><span class="topic-num">04</span>
+        <div><h2><span data-i18n data-en="Gait-assist motion prediction">보행 보조를 위한 엑소수트 모션 예측</span></h2><p class="topic-sub"><span data-i18n data-en="We predict the next motion to deliver assistance at the right moment.">다음 동작을 미리 예측해 적절한 시점에 힘을 보조합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_06.png" alt="보행 보조를 위한 엑소수트 모션 예측" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_exosuit_07.png" alt="보행 보조를 위한 엑소수트 모션 예측" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_exosuit_06.png" alt="Gait-assist motion prediction" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_exosuit_07.png" alt="Gait-assist motion prediction" loading="lazy"></figure>
       </div>
     </div>
   </div>
 </section>
+
 <section class="pn-nav">
   <div class="container pn-grid">
-    <a href="research-brain.html" class="pn prev"><span>← Previous</span><strong>Brain</strong></a>
-    <a href="research.html" class="pn all"><strong>All Research</strong></a>
-    <a href="research-shoulder-mechanics.html" class="pn next"><span>Next →</span><strong>Shoulder Mechanics</strong></a>
+    <a href="research-brain.html" class="pn prev"><span>← <span data-i18n data-en="Previous">이전</span></span><strong><span data-i18n data-en="Brain">뇌</span></strong></a>
+    <a href="research.html" class="pn all"><strong><span data-i18n data-en="All Research">전체 연구</span></strong></a>
+    <a href="research-shoulder-mechanics.html" class="pn next"><span><span data-i18n data-en="Next">다음</span> →</span><strong><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span></strong></a>
   </div>
 </section>
 <footer class="footer">
   <div class="container footer-grid">
     <div class="footer-brand">
       <div class="footer-logo"><img src="assets/img/logo.png" alt=""><span>AM&amp;D <em>Lab</em></span></div>
-      <p>Applied Mechanics and Design Laboratory<br>Department of Mechanical Engineering, Sogang University</p>
+      <p><span data-i18n data-en="Applied Mechanics and Design Laboratory">응용역학 및 설계 연구실</span><br><span data-i18n data-en="Dept. of Mechanical Engineering, Sogang University">서강대학교 기계공학과</span></p>
     </div>
     <div class="footer-col">
-      <h4>Explore</h4>
-      <a href="research.html">Research</a>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
+      <h4><span data-i18n data-en="Explore">바로가기</span></h4>
+      <a href="research.html"><span data-i18n data-en="Research">연구</span></a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
     </div>
     <div class="footer-col">
-      <h4>Contact</h4>
-      <p>04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호<br>Adam Schall Hall (AS) 608 & 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea</p>
-      <p>Office AS 611 · Lab AS 608 &amp; 609<br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
+      <h4><span data-i18n data-en="Contact">연락처</span></h4>
+      <p><span data-i18n data-en="Adam Schall Hall (AS) 608 &amp; 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea">04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호</span></p>
+      <p><span data-i18n data-en="Office AS 611 · Lab AS 608 &amp; 609">교수 연구실 AS 611 · 실험실 AS 608 & 609</span><br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
     </div>
   </div>
   <div class="footer-bottom"><div class="container">© 2026 Applied Mechanics &amp; Design Laboratory, Sogang University. All rights reserved.</div></div>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bone Conduction — AM&D Lab</title>
-<meta name="description" content="AM&D Lab Bone Conduction (골전도) 연구">
+<title>골전도 Bone Conduction — AM&D Lab</title>
+<meta name="description" content="AM&D Lab Bone Conduction (골전도) 연구 소개">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,22 +20,24 @@
       <span class="brand-text">AM&amp;D <em>Lab</em></span>
     </a>
     <nav class="menu" id="menu">
-      <a href="index.html">Home</a>
+      <a href="index.html"><span data-i18n data-en="Home">홈</span></a>
       <div class="dropdown open-active">
-        <a href="research.html" class="active">Research <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+        <a href="research.html" class="active"><span data-i18n data-en="Research">연구</span> <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
         <div class="dropdown-panel">
-          <a href="research-bone-conduction.html">Bone Conduction</a>
-          <a href="research-brain.html">Brain</a>
-          <a href="research-exosuit.html">Exosuit</a>
-          <a href="research-shoulder-mechanics.html">Shoulder Mechanics</a>
-          <a href="research-wildfire.html">Wildfire</a>
+          <a href="research-bone-conduction.html"><span data-i18n data-en="Bone Conduction">골전도</span></a>
+          <a href="research-motion-sickness.html"><span data-i18n data-en="Motion Sickness">멀미</span></a>
+          <a href="research-brain.html"><span data-i18n data-en="Brain">뇌</span></a>
+          <a href="research-exosuit.html"><span data-i18n data-en="Exosuit">엑소수트</span></a>
+          <a href="research-shoulder-mechanics.html"><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span></a>
+          <a href="research-wildfire.html"><span data-i18n data-en="Wildfire">산불</span></a>
         </div>
       </div>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
-      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr">Contact</a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
+      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr"><span data-i18n data-en="Contact">문의</span></a>
     </nav>
+    <button class="lang-btn" aria-label="언어 전환 / switch language">ENG</button>
     <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -44,81 +46,95 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="eyebrow">Research · 골전도</p>
-    <h1>Bone Conduction</h1>
-    <p class="page-hero-sub">이론적 연구 기반 — 사람 머리 유한요소 모델을 활용한 골전도 청각 메커니즘 규명</p>
+    <p class="eyebrow"><span data-i18n data-en="Research">연구</span> · <span data-i18n data-en="골전도">Bone Conduction</span></p>
+    <h1><span data-i18n data-en="Bone Conduction">골전도</span></h1>
+    
   </div>
 </section>
 
-<section class="section">
+<section class="section intro-section">
+  <div class="container intro-grid">
+    <div class="intro-lead reveal">
+      <p><span data-i18n data-en="Sound reaches the cochlea not only through air but also through skull vibration — bone conduction. We build whole-head finite-element (FE) models to trace how vibration travels through bone to the hearing organs, validated by experiment. This underpins bone-conduction hearing aids, earphones, and hearing-loss diagnosis.">소리는 공기뿐 아니라 두개골의 진동을 통해서도 달팽이관에 전달됩니다(골전도). 우리는 사람 머리 전체를 유한요소(FE) 모델로 구현해, 진동이 뼈를 타고 청각기관까지 전해지는 과정을 시뮬레이션과 실험으로 규명합니다. 골전도 보청기·이어폰 설계와 난청 진단의 토대가 되는 연구예요.</span></p>
+
+    </div>
+    <div class="intro-points reveal" style="--d:.1s">
+      <h3><span data-i18n data-en="What you’ll work on">이런 걸 하게 됩니다</span></h3>
+      <ul class="dot-list">
+        <li><span data-i18n data-en="FE analysis of the human head in the frequency and time domains">사람 머리 유한요소 모델을 활용한 주파수·시간 영역 진동 해석</span></li>
+        <li><span data-i18n data-en="3D-printed human-head phantom fabrication and experiments">3D 프린터로 만든 사람 머리 팬텀 제작 및 실험</span></li>
+        <li><span data-i18n data-en="Lumped-parameter modeling and validation of the middle ear">중이 구조의 lumped-model 재현 및 검증</span></li>
+        <li><span data-i18n data-en="Automated 3D reconstruction of the ossicles from CT images">CT 영상에서 이소골(청각 뼈) 3D 자동 복원</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
   <div class="container topic-list">
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">01</span><h2>중이와 내이를 포함한 FE 모델 구축 및 time domain 해석</h2></div>
+      <div class="topic-head"><span class="topic-num">01</span>
+        <div><h2><span data-i18n data-en="Whole-ear FE model and time-domain analysis">중이와 내이를 포함한 FE 모델 구축 및 시간영역 해석</span></h2><p class="topic-sub"><span data-i18n data-en="A model capturing fine middle- and inner-ear structures computes the response to real sound stimuli in the time domain.">중이·내이의 미세 구조까지 반영한 모델로, 실제 소리 자극에 대한 반응을 시간 영역에서 계산합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_00.png" alt="중이와 내이를 포함한 FE 모델 구축 및 time domain 해석" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_bone-conduction_01.jpg" alt="중이와 내이를 포함한 FE 모델 구축 및 time domain 해석" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_00.png" alt="Whole-ear FE model and time-domain analysis" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_bone-conduction_01.jpg" alt="Whole-ear FE model and time-domain analysis" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">02</span><h2>다양한 회전 조건에 따른 cupula 변형 거동 분석</h2></div>
-      <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_02.jpg" alt="다양한 회전 조건에 따른 cupula 변형 거동 분석" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_bone-conduction_03.jpg" alt="다양한 회전 조건에 따른 cupula 변형 거동 분석" loading="lazy"></figure>
+      <div class="topic-head"><span class="topic-num">02</span>
+        <div><h2><span data-i18n data-en="Effect of head fixation on bone-conduction response">사람 머리 고정 조건에 따른 골전도 반응 비교</span></h2><p class="topic-sub"><span data-i18n data-en="We compare how bone-conduction responses change with the way the head is fixed in experiments.">실험에서 머리를 어떻게 고정하느냐에 따라 골전도 반응이 어떻게 달라지는지 비교·분석합니다.</span></p></div>
       </div>
-    </div>
-    <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">03</span><h2>유한요소 모델을 활용한 전정기관 모션 생성 및 골전도 자극 입력값 도출 알고리즘 설계</h2></div>
       <div class="fig-grid cols-1">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_04.png" alt="유한요소 모델을 활용한 전정기관 모션 생성 및 골전도 자극 입력값 도출 알고리즘 설계" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_05.jpg" alt="Effect of head fixation on bone-conduction response" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">04</span><h2>골전도 실험에서 사람 머리 고정 조건에 따른 골전도 response 비교 및 분석</h2></div>
-      <div class="fig-grid cols-1">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_05.jpg" alt="골전도 실험에서 사람 머리 고정 조건에 따른 골전도 response 비교 및 분석" loading="lazy"></figure>
+      <div class="topic-head"><span class="topic-num">03</span>
+        <div><h2><span data-i18n data-en="3D reconstruction of ossicles from CT">CT 데이터를 활용한 이소골 3D 복원</span></h2><p class="topic-sub"><span data-i18n data-en="Deep learning automatically reconstructs 3D ossicle shapes from low-resolution clinical CT.">저해상도 임상 CT 영상에서 딥러닝으로 이소골의 3D 형상을 자동으로 복원합니다.</span></p></div>
       </div>
-    </div>
-    <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">05</span><h2>CT 데이터를 활용한 ossicle 3D reconstruction</h2></div>
       <div class="fig-grid cols-3">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_06.jpg" alt="CT 데이터를 활용한 ossicle 3D reconstruction" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_bone-conduction_07.png" alt="CT 데이터를 활용한 ossicle 3D reconstruction" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.12s"><img src="assets/img/research_bone-conduction_08.png" alt="CT 데이터를 활용한 ossicle 3D reconstruction" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_06.jpg" alt="3D reconstruction of ossicles from CT" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_bone-conduction_07.png" alt="3D reconstruction of ossicles from CT" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.1s"><img src="assets/img/research_bone-conduction_08.png" alt="3D reconstruction of ossicles from CT" loading="lazy"></figure>
       </div>
     </div>
     <div class="topic reveal">
-      <div class="topic-head"><span class="topic-num">06</span><h2>골전도 자극 힘 방향에 따른 골전도 청력 영향 분석</h2></div>
+      <div class="topic-head"><span class="topic-num">04</span>
+        <div><h2><span data-i18n data-en="Effect of stimulus force direction on hearing">골전도 자극의 힘 방향에 따른 청력 영향 분석</span></h2><p class="topic-sub"><span data-i18n data-en="We quantify how the direction and phase of the vibration stimulus affect hearing.">진동 자극을 주는 방향과 위상이 청력에 어떤 영향을 미치는지 정량적으로 분석합니다.</span></p></div>
+      </div>
       <div class="fig-grid cols-2">
-        <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_09.jpg" alt="골전도 자극 힘 방향에 따른 골전도 청력 영향 분석" loading="lazy"></figure>
-        <figure class="fig reveal" style="--d:0.06s"><img src="assets/img/research_bone-conduction_10.jpg" alt="골전도 자극 힘 방향에 따른 골전도 청력 영향 분석" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.0s"><img src="assets/img/research_bone-conduction_09.jpg" alt="Effect of stimulus force direction on hearing" loading="lazy"></figure>
+          <figure class="fig reveal" style="--d:0.05s"><img src="assets/img/research_bone-conduction_10.jpg" alt="Effect of stimulus force direction on hearing" loading="lazy"></figure>
       </div>
     </div>
   </div>
 </section>
+
 <section class="pn-nav">
   <div class="container pn-grid">
-    <a href="research-wildfire.html" class="pn prev"><span>← Previous</span><strong>Wildfire</strong></a>
-    <a href="research.html" class="pn all"><strong>All Research</strong></a>
-    <a href="research-brain.html" class="pn next"><span>Next →</span><strong>Brain</strong></a>
+    <a href="research-wildfire.html" class="pn prev"><span>← <span data-i18n data-en="Previous">이전</span></span><strong><span data-i18n data-en="Wildfire">산불</span></strong></a>
+    <a href="research.html" class="pn all"><strong><span data-i18n data-en="All Research">전체 연구</span></strong></a>
+    <a href="research-motion-sickness.html" class="pn next"><span><span data-i18n data-en="Next">다음</span> →</span><strong><span data-i18n data-en="Motion Sickness">멀미</span></strong></a>
   </div>
 </section>
 <footer class="footer">
   <div class="container footer-grid">
     <div class="footer-brand">
       <div class="footer-logo"><img src="assets/img/logo.png" alt=""><span>AM&amp;D <em>Lab</em></span></div>
-      <p>Applied Mechanics and Design Laboratory<br>Department of Mechanical Engineering, Sogang University</p>
+      <p><span data-i18n data-en="Applied Mechanics and Design Laboratory">응용역학 및 설계 연구실</span><br><span data-i18n data-en="Dept. of Mechanical Engineering, Sogang University">서강대학교 기계공학과</span></p>
     </div>
     <div class="footer-col">
-      <h4>Explore</h4>
-      <a href="research.html">Research</a>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
+      <h4><span data-i18n data-en="Explore">바로가기</span></h4>
+      <a href="research.html"><span data-i18n data-en="Research">연구</span></a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
     </div>
     <div class="footer-col">
-      <h4>Contact</h4>
-      <p>04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호<br>Adam Schall Hall (AS) 608 & 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea</p>
-      <p>Office AS 611 · Lab AS 608 &amp; 609<br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
+      <h4><span data-i18n data-en="Contact">연락처</span></h4>
+      <p><span data-i18n data-en="Adam Schall Hall (AS) 608 &amp; 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea">04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호</span></p>
+      <p><span data-i18n data-en="Office AS 611 · Lab AS 608 &amp; 609">교수 연구실 AS 611 · 실험실 AS 608 & 609</span><br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
     </div>
   </div>
   <div class="footer-bottom"><div class="container">© 2026 Applied Mechanics &amp; Design Laboratory, Sogang University. All rights reserved.</div></div>

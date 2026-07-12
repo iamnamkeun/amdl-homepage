@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Research — AM&D Lab</title>
-<meta name="description" content="AM&D Lab 연구 분야: 골전도, 뇌, 엑소수트, 어깨 역학, 산불.">
+<title>연구 — AM&D Lab</title>
+<meta name="description" content="AM&D Lab 연구 분야: 골전도, 멀미, 뇌, 엑소수트, 어깨 역학, 산불.">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,22 +20,24 @@
       <span class="brand-text">AM&amp;D <em>Lab</em></span>
     </a>
     <nav class="menu" id="menu">
-      <a href="index.html">Home</a>
+      <a href="index.html"><span data-i18n data-en="Home">홈</span></a>
       <div class="dropdown open-active">
-        <a href="research.html" class="active">Research <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+        <a href="research.html" class="active"><span data-i18n data-en="Research">연구</span> <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
         <div class="dropdown-panel">
-          <a href="research-bone-conduction.html">Bone Conduction</a>
-          <a href="research-brain.html">Brain</a>
-          <a href="research-exosuit.html">Exosuit</a>
-          <a href="research-shoulder-mechanics.html">Shoulder Mechanics</a>
-          <a href="research-wildfire.html">Wildfire</a>
+          <a href="research-bone-conduction.html"><span data-i18n data-en="Bone Conduction">골전도</span></a>
+          <a href="research-motion-sickness.html"><span data-i18n data-en="Motion Sickness">멀미</span></a>
+          <a href="research-brain.html"><span data-i18n data-en="Brain">뇌</span></a>
+          <a href="research-exosuit.html"><span data-i18n data-en="Exosuit">엑소수트</span></a>
+          <a href="research-shoulder-mechanics.html"><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span></a>
+          <a href="research-wildfire.html"><span data-i18n data-en="Wildfire">산불</span></a>
         </div>
       </div>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
-      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr">Contact</a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
+      <a class="nav-cta" href="mailto:nkim@sogang.ac.kr"><span data-i18n data-en="Contact">문의</span></a>
     </nav>
+    <button class="lang-btn" aria-label="언어 전환 / switch language">ENG</button>
     <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -44,9 +46,9 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="eyebrow">Research</p>
-    <h1>무엇을 연구하나요</h1>
-    <p class="page-hero-sub">모델링과 시뮬레이션, 실험, 그리고 AI — 다섯 개의 연구 축을 소개합니다.</p>
+    <p class="eyebrow"><span data-i18n data-en="Research">연구</span></p>
+    <h1><span data-i18n data-en="What we work on">무엇을 연구하나요</span></h1>
+    <p class="page-hero-sub"><span data-i18n data-en="Modeling, simulation, experiment, and AI — our six research directions.">모델링과 시뮬레이션, 실험, 그리고 AI — 여섯 개의 연구 축을 소개합니다.</span></p>
   </div>
 </section>
 
@@ -56,76 +58,60 @@
       <div class="rrow-img"><img src="assets/img/research_00.png" alt="Bone Conduction" loading="lazy"></div>
       <div class="rrow-body">
         <span class="rcard-num">01</span>
-        <h2>Bone Conduction <span class="kr">골전도</span></h2>
+        <h2><span data-i18n data-en="Bone Conduction">골전도</span> <span class="kr"><span data-i18n data-en="골전도">Bone Conduction</span></span></h2>
         <p class="rrow-tagline">Hearing through vibration</p>
-        <p class="rrow-desc">이론적 연구 기반 — 사람 머리 유한요소 모델을 활용한 골전도 청각 메커니즘 규명</p>
-        <ul class="dot-list">
-          <li>사람머리 유한요소 모델을 활용한 frequency / time domain 해석</li>
-          <li>멀미 저감을 위한 능동형 멀미 저감 디바이스 개발</li>
-          <li>다운증후군 환자의 귀 형태에 따른 공기전도/골전도 특성 분석</li>
-          <li>3D 프린터를 활용한 사람 머리 phantom 제작 및 실험</li>
-          <li>중이 구조의 lumped-model 재현 및 검증</li>
-        </ul>
-        <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        <p class="rrow-desc"><span data-i18n data-en="How sound travels to the ear through skull vibration, studied with whole-head models.">소리가 두개골 진동을 타고 귀로 전달되는 원리를 사람 머리 모델로 규명합니다.</span></p>
+        <span class="rcard-link"><span data-i18n data-en="Learn more">자세히 보기</span> <span class="arr">→</span></span>
       </div>
     </a>
-    <a class="rrow reveal rrow-flip" href="research-brain.html">
-      <div class="rrow-img"><img src="assets/img/research_01.png" alt="Brain" loading="lazy"></div>
+    <a class="rrow reveal rrow-flip" href="research-motion-sickness.html">
+      <div class="rrow-img"><img src="assets/img/research_bone-conduction_02.jpg" alt="Motion Sickness" loading="lazy"></div>
       <div class="rrow-body">
         <span class="rcard-num">02</span>
-        <h2>Brain <span class="kr">뇌</span></h2>
-        <p class="rrow-tagline">Vibration therapeutics for the brain</p>
-        <p class="rrow-desc">알츠하이머 치료를 위한 진동 자극 방법론의 개발과 검증</p>
-        <ul class="dot-list">
-          <li>뇌 자극 시뮬레이션을 위한 사람 머리 유한요소 모델 개발</li>
-          <li>다중물리해석 기법을 활용한 뇌 시뮬레이션 및 분석</li>
-        </ul>
-        <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        <h2><span data-i18n data-en="Motion Sickness">멀미</span> <span class="kr"><span data-i18n data-en="멀미">Motion Sickness</span></span></h2>
+        <p class="rrow-tagline">Vestibular mechanics & comfort</p>
+        <p class="rrow-desc"><span data-i18n data-en="Modeling the inner-ear vestibular system to explain motion sickness and reduce it.">귓속 전정기관을 모델링해 멀미가 생기는 원리를 밝히고 이를 줄이는 방법을 찾습니다.</span></p>
+        <span class="rcard-link"><span data-i18n data-en="Learn more">자세히 보기</span> <span class="arr">→</span></span>
       </div>
     </a>
-    <a class="rrow reveal" href="research-exosuit.html">
-      <div class="rrow-img"><img src="assets/img/research_02.png" alt="Exosuit" loading="lazy"></div>
+    <a class="rrow reveal" href="research-brain.html">
+      <div class="rrow-img"><img src="assets/img/research_01.png" alt="Brain" loading="lazy"></div>
       <div class="rrow-body">
         <span class="rcard-num">03</span>
-        <h2>Exosuit <span class="kr">엑소수트</span></h2>
-        <p class="rrow-tagline">AI-driven motion prediction & optimization</p>
-        <p class="rrow-desc">인공지능을 활용한 엑소수트의 모션 예측과 최적화</p>
-        <ul class="dot-list">
-          <li>엑소수트의 센서 정보 기반 보행 예측과 보조힘 예측</li>
-          <li>하드웨어 부착 위치 최적화를 위한 모델 구축 및 시뮬레이션</li>
-          <li>부착 센서 위치 및 개수 최적화</li>
-        </ul>
-        <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        <h2><span data-i18n data-en="Brain">뇌</span> <span class="kr"><span data-i18n data-en="뇌">Brain</span></span></h2>
+        <p class="rrow-tagline">Vibration therapeutics for the brain</p>
+        <p class="rrow-desc"><span data-i18n data-en="Simulating how therapeutic vibration reaches the brain for Alzheimer’s treatment.">알츠하이머 치료를 위한 진동 자극이 뇌에 어떻게 전달되는지 시뮬레이션합니다.</span></p>
+        <span class="rcard-link"><span data-i18n data-en="Learn more">자세히 보기</span> <span class="arr">→</span></span>
       </div>
     </a>
-    <a class="rrow reveal rrow-flip" href="research-shoulder-mechanics.html">
-      <div class="rrow-img"><img src="assets/img/research_03.png" alt="Shoulder Mechanics" loading="lazy"></div>
+    <a class="rrow reveal rrow-flip" href="research-exosuit.html">
+      <div class="rrow-img"><img src="assets/img/research_02.png" alt="Exosuit" loading="lazy"></div>
       <div class="rrow-body">
         <span class="rcard-num">04</span>
-        <h2>Shoulder Mechanics <span class="kr">어깨 역학</span></h2>
-        <p class="rrow-tagline">Biomechanics of the shoulder</p>
-        <p class="rrow-desc">생체역학 실험 장치 설계 및 어깨 질환 관련 시뮬레이션</p>
-        <ul class="dot-list">
-          <li>골절 고정술 고정력 증대를 위한 나사 고정 조건 및 미니플레이트 보강 구조해석</li>
-          <li>어깨 생체역학 실험 장치를 활용한 회전근개 파열 수술 효과 검증</li>
-          <li>어깨 MRI 영상을 활용한 AI 기반 자동 분석 및 재파열 위험 예측</li>
-        </ul>
-        <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        <h2><span data-i18n data-en="Exosuit">엑소수트</span> <span class="kr"><span data-i18n data-en="엑소수트">Exosuit</span></span></h2>
+        <p class="rrow-tagline">AI-driven motion prediction</p>
+        <p class="rrow-desc"><span data-i18n data-en="Making wearable robots anticipate the wearer’s motion and assist at the right moment.">입는 로봇이 착용자의 움직임을 미리 예측해 알맞은 힘으로 보조하도록 만듭니다.</span></p>
+        <span class="rcard-link"><span data-i18n data-en="Learn more">자세히 보기</span> <span class="arr">→</span></span>
       </div>
     </a>
-    <a class="rrow reveal" href="research-wildfire.html">
-      <div class="rrow-img"><img src="assets/img/research_04.jpg" alt="Wildfire" loading="lazy"></div>
+    <a class="rrow reveal" href="research-shoulder-mechanics.html">
+      <div class="rrow-img"><img src="assets/img/research_03.png" alt="Shoulder Mechanics" loading="lazy"></div>
       <div class="rrow-body">
         <span class="rcard-num">05</span>
-        <h2>Wildfire <span class="kr">산불</span></h2>
+        <h2><span data-i18n data-en="Shoulder Mechanics">어깨 역학</span> <span class="kr"><span data-i18n data-en="어깨 역학">Shoulder Mechanics</span></span></h2>
+        <p class="rrow-tagline">Biomechanics of the shoulder</p>
+        <p class="rrow-desc"><span data-i18n data-en="Studying shoulder injury and surgery with test rigs, simulation, and AI imaging.">실험 장치와 시뮬레이션, AI 영상 분석으로 어깨 질환과 수술을 연구합니다.</span></p>
+        <span class="rcard-link"><span data-i18n data-en="Learn more">자세히 보기</span> <span class="arr">→</span></span>
+      </div>
+    </a>
+    <a class="rrow reveal rrow-flip" href="research-wildfire.html">
+      <div class="rrow-img"><img src="assets/img/research_04.jpg" alt="Wildfire" loading="lazy"></div>
+      <div class="rrow-body">
+        <span class="rcard-num">06</span>
+        <h2><span data-i18n data-en="Wildfire">산불</span> <span class="kr"><span data-i18n data-en="산불">Wildfire</span></span></h2>
         <p class="rrow-tagline">Data-driven wildfire prediction</p>
-        <p class="rrow-desc">산불 특성 데이터 기반 최적화 및 예측</p>
-        <ul class="dot-list">
-          <li>시설물의 산불 취약성 평가지표 최적화 및 자동화 프로그램</li>
-          <li>산불 피해지 정보와 산불 확산예측 정보를 기반으로 한 기상정보 대리 모델 구축</li>
-          <li>산불 특성을 반영한 국소 지역에서의 바람장 예측</li>
-        </ul>
-        <span class="rcard-link">자세히 보기 <span class="arr">→</span></span>
+        <p class="rrow-desc"><span data-i18n data-en="Assessing facility vulnerability and predicting local wind fields from wildfire data.">산불 데이터로 시설물 취약성을 평가하고 국소 바람장을 예측하는 모델을 만듭니다.</span></p>
+        <span class="rcard-link"><span data-i18n data-en="Learn more">자세히 보기</span> <span class="arr">→</span></span>
       </div>
     </a>
   </div>
@@ -134,19 +120,19 @@
   <div class="container footer-grid">
     <div class="footer-brand">
       <div class="footer-logo"><img src="assets/img/logo.png" alt=""><span>AM&amp;D <em>Lab</em></span></div>
-      <p>Applied Mechanics and Design Laboratory<br>Department of Mechanical Engineering, Sogang University</p>
+      <p><span data-i18n data-en="Applied Mechanics and Design Laboratory">응용역학 및 설계 연구실</span><br><span data-i18n data-en="Dept. of Mechanical Engineering, Sogang University">서강대학교 기계공학과</span></p>
     </div>
     <div class="footer-col">
-      <h4>Explore</h4>
-      <a href="research.html">Research</a>
-      <a href="people.html">People</a>
-      <a href="publications.html">Publications</a>
-      <a href="gallery.html">Gallery</a>
+      <h4><span data-i18n data-en="Explore">바로가기</span></h4>
+      <a href="research.html"><span data-i18n data-en="Research">연구</span></a>
+      <a href="people.html"><span data-i18n data-en="People">구성원</span></a>
+      <a href="publications.html"><span data-i18n data-en="Publications">논문</span></a>
+      <a href="gallery.html"><span data-i18n data-en="Gallery">갤러리</span></a>
     </div>
     <div class="footer-col">
-      <h4>Contact</h4>
-      <p>04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호<br>Adam Schall Hall (AS) 608 & 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea</p>
-      <p>Office AS 611 · Lab AS 608 &amp; 609<br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
+      <h4><span data-i18n data-en="Contact">연락처</span></h4>
+      <p><span data-i18n data-en="Adam Schall Hall (AS) 608 &amp; 609, 35 Baekbeom-ro, Mapo-gu, Seoul 04107, Korea">04107 서울특별시 마포구 백범로 35 (신수동) 아담샬관(AS) 608 & 609호</span></p>
+      <p><span data-i18n data-en="Office AS 611 · Lab AS 608 &amp; 609">교수 연구실 AS 611 · 실험실 AS 608 & 609</span><br><a href="mailto:nkim@sogang.ac.kr">nkim@sogang.ac.kr</a></p>
     </div>
   </div>
   <div class="footer-bottom"><div class="container">© 2026 Applied Mechanics &amp; Design Laboratory, Sogang University. All rights reserved.</div></div>
