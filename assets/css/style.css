@@ -18,8 +18,8 @@
   --dark-line: rgba(255, 255, 255, 0.09);
   --radius: 16px;
   --radius-sm: 10px;
-  --font-display: "Paperlogy", "Pretendard Variable", Pretendard, sans-serif;
-  --font-body: "Paperlogy", "Pretendard Variable", Pretendard, -apple-system,
+  --font-display: "Paperlogy", "Wanted Sans Variable", "Pretendard Variable", Pretendard, sans-serif;
+  --font-body: "Wanted Sans Variable", "Pretendard Variable", Pretendard, -apple-system,
     BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
     "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   --shadow-sm: 0 1px 2px rgba(22, 24, 29, 0.05), 0 4px 12px rgba(22, 24, 29, 0.05);
@@ -631,3 +631,20 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
 }
 @media (prefers-reduced-motion: reduce) { .cue-line::after { animation: none; top: 16px; opacity: 1; } }
 @media (max-width: 760px) { .scroll-cue { right: 18px; bottom: 18px; } .cue-line { height: 36px; } }
+
+/* contact map */
+.contact-map {
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+  min-height: 340px; background: var(--paper-2);
+}
+.contact-map iframe { width: 100%; height: 100%; min-height: 340px; border: 0; display: block; filter: grayscale(0.15); }
+@media (max-width: 960px) { .contact-map { min-height: 280px; } .contact-map iframe { min-height: 280px; } }
+.contact-map { position: relative; display: block; }
+.contact-map iframe { pointer-events: none; }
+.contact-map-pin {
+  position: absolute; left: 14px; bottom: 14px; z-index: 2;
+  background: var(--ink); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 7px 14px; border-radius: 999px; box-shadow: var(--shadow-md);
+}
+.contact-map:hover { border-color: var(--amber); }
