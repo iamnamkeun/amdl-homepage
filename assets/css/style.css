@@ -291,20 +291,35 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
 .prof-body h2 { font-size: 32px; margin-bottom: 6px; }
 .prof-contact { color: var(--ink-3); margin-bottom: 30px; }
 .prof-contact a { color: var(--amber-deep); font-weight: 600; }
-.prof-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+/* 경력 쪽 문구(영문 학과명)가 길어 약간 더 넓게 배분 */
+.prof-cols { display: grid; grid-template-columns: 1fr 1.08fr; gap: 28px; }
 .prof-cols h4 {
   font-family: var(--font-display); font-size: 13px; text-transform: uppercase;
   letter-spacing: 0.14em; color: var(--ink-3); margin-bottom: 16px;
 }
 .timeline { list-style: none; }
-.timeline li { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
-.tl-badge {
-  flex-shrink: 0; font-family: var(--font-display); font-size: 11.5px; font-weight: 600;
-  background: var(--amber-soft); color: var(--amber-deep);
-  padding: 3px 10px; border-radius: 999px; margin-top: 2px; white-space: nowrap;
+/* 배지 열을 고정폭으로 두어 모든 줄의 텍스트 시작점(세로줄)을 맞춘다.
+   줄바꿈이 일어나도 이어지는 줄이 같은 위치에서 시작(행잉 인덴트)된다. */
+.timeline li {
+  display: grid;
+  grid-template-columns: var(--tl-w, 58px) 1fr;
+  column-gap: 14px;
+  align-items: start;
+  margin-bottom: 15px;
 }
-.timeline strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.4; }
-.timeline em { font-style: normal; font-size: 13px; color: var(--ink-3); }
+.tl-badge {
+  display: block; width: 100%; text-align: center;
+  font-family: var(--font-display); font-size: 11.5px; font-weight: 600;
+  background: var(--amber-soft); color: var(--amber-deep);
+  padding: 3px 6px; border-radius: 999px; margin-top: 3px; white-space: nowrap;
+}
+.timeline strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.45; }
+.timeline em {
+  display: block; font-style: normal; font-size: 13px;
+  color: var(--ink-3); line-height: 1.55; margin-top: 1px;
+}
+/* 경력 열은 연도 범위(2022 – present)가 들어가므로 배지 폭을 더 넓게 */
+.prof-cols > div:nth-child(2) .timeline { --tl-w: 100px; }
 
 .members-section .container + .container { margin-top: 72px; }
 .group-title { font-size: clamp(24px, 3vw, 30px); margin-bottom: 30px; }
