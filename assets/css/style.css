@@ -663,3 +663,7 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
   padding: 7px 14px; border-radius: 999px; box-shadow: var(--shadow-md);
 }
 .contact-map:hover { border-color: var(--amber); }
+
+/* 논문 제목에 DOI 링크가 걸린 경우 */
+.pub-body h3 a { transition: color 0.2s; }
+.pub-body h3 a:hover { color: var(--amber-deep); }
