@@ -26,6 +26,19 @@
     });
   });
 
+
+  /* ---------- 이메일 스팸 스크래핑 방지: 주소를 실행 시점에 조립 ---------- */
+  /* HTML 원본에는 뒤집힌 조각(data-u/data-d)만 있고, 페이지가 열릴 때 여기서 합친다.
+     JS가 꺼진 환경에서는 "user [at] sogang [dot] ac [dot] kr" 텍스트가 그대로 보인다. */
+  (function () {
+    var flip = function (t) { return t.split('').reverse().join(''); };
+    document.querySelectorAll('[data-u][data-d]').forEach(function (el) {
+      var addr = flip(el.getAttribute('data-u')) + '@' + flip(el.getAttribute('data-d'));
+      if (el.tagName === 'A') el.setAttribute('href', 'mailto:' + addr);
+      if (el.classList.contains('js-mail')) el.textContent = addr;
+    });
+  })();
+
   /* ---------- nav ---------- */
   var nav = document.getElementById('nav');
   var hero = document.querySelector('.hero, .page-hero');
