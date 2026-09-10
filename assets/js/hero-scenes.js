@@ -64,208 +64,270 @@
     draw: function () {}
   };
 
-  /* ================= cochlea: 내이 — 나선형 달팽이관 속 기저막 진행파 ================= */
+  /* ---------------- 3D 공용: 카메라(z 위, y 깊이), 조명, 튜브 메시 ---------------- */
+  function Cam(cx, cy, scale, yaw, tilt, f) { this.cx = cx; this.cy = cy; this.scale = scale; this.f = f; this.cy0 = Math.cos(yaw); this.sy0 = Math.sin(yaw); this.ct = Math.cos(tilt); this.st = Math.sin(tilt); }
+  Cam.prototype.rot = function (p) { var x = p[0] * this.cy0 - p[1] * this.sy0, y = p[0] * this.sy0 + p[1] * this.cy0, z = p[2]; return [x, y * this.ct - z * this.st, y * this.st + z * this.ct]; };
+  Cam.prototype.proj = function (p) { var c = this.rot(p), d = this.f / (this.f + c[1]); return { x: this.cx + c[0] * this.scale * d, y: this.cy - c[2] * this.scale * d, depth: c[1] }; };
+  var LIGHT = [-0.45, -0.55, 0.70];
+  function norm3(v) { var l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+  function cross3(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  function shadeOf(cam, n) { var c = cam.rot(n), d = c[0] * LIGHT[0] + c[1] * LIGHT[1] + c[2] * LIGHT[2]; return { s: 0.28 + 0.72 * Math.max(0, d), front: c[1] < 0 }; }
+  // 경로(3D 점 배열)를 따라 튜브 사각면 생성 → out에 {p:[4점], depth, s, front}
+  function tubeQuads(cam, path, radii, K, out, upv) {
+    var n = path.length, rings = [], nrms = [], up = upv || [0, 0, 1];
+    for (var i = 0; i < n; i++) {
+      var a = path[Math.max(0, i - 1)], b = path[Math.min(n - 1, i + 1)], T = norm3([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+      var N = cross3(T, up); if (Math.hypot(N[0], N[1], N[2]) < 1e-4) N = [1, 0, 0]; N = norm3(N); var B = cross3(N, T);
+      var ring = [], nr = [];
+      for (var j = 0; j < K; j++) { var ph = j / K * Math.PI * 2, c = Math.cos(ph), s = Math.sin(ph), v = [c * N[0] + s * B[0], c * N[1] + s * B[1], c * N[2] + s * B[2]]; nr.push(v); ring.push(cam.proj([path[i][0] + v[0] * radii[i], path[i][1] + v[1] * radii[i], path[i][2] + v[2] * radii[i]])); }
+      rings.push(ring); nrms.push(nr);
+    }
+    for (i = 0; i < n - 1; i++) for (var j2 = 0; j2 < K; j2++) {
+      var j3 = (j2 + 1) % K, q = [rings[i][j2], rings[i][j3], rings[i + 1][j3], rings[i + 1][j2]], nv = nrms[i][j2], nv2 = nrms[i][j3];
+      var sh = shadeOf(cam, [nv[0] + nv2[0], nv[1] + nv2[1], nv[2] + nv2[2]]);
+      out.push({ p: q, depth: (q[0].depth + q[2].depth) / 2, s: sh.s, front: sh.front });
+    }
+  }
+  function fillQuad(q, style, stroke) { ctx.beginPath(); ctx.moveTo(q[0].x, q[0].y); ctx.lineTo(q[1].x, q[1].y); ctx.lineTo(q[2].x, q[2].y); ctx.lineTo(q[3].x, q[3].y); ctx.closePath(); ctx.fillStyle = style; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 0.6; ctx.stroke(); } }
+  function bone(s, a) { return 'rgba(' + Math.round(236 * s) + ',' + Math.round(226 * s) + ',' + Math.round(206 * s) + ',' + a + ')'; }
+  function offscreen() { var c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height; var x = c.getContext('2d'); x.setTransform(DPR, 0, 0, DPR, 0, 0); return { c: c, x: x }; }
+  function withCtx(x, fn) { var keep = ctx; ctx = x; fn(); ctx = keep; }
+
+  /* ================= cochlea: 내이 미로 — 3D 음영 달팽이관(달팽이집 형태) + 반고리관 + 기저막 진행파 ================= */
   var cochlea = {
     ko: '달팽이관 기저막 진행파 · 골전도 청각 연구', en: 'Basilar-membrane traveling wave · bone-conduction hearing',
     init: function () {
       var S = Math.min(W, HV);
-      this.N = MOBILE ? 220 : 400; this.turns = 2.5; this.tilt = 0.6;
-      this.c = MOBILE ? { x: W * 0.52, y: HV * 0.60 } : { x: W * 0.60, y: HV * 0.58 };
-      this.r0 = S * (MOBILE ? 0.36 : 0.30); this.amp = S * (MOBILE ? 0.07 : 0.06);
-      var th0 = Math.PI * 1.02;
-      this.seg = []; this.order = [];
-      for (var i = 0; i <= this.N; i++) {
-        var u = i / this.N, th = th0 + u * this.turns * 2 * Math.PI, r = this.r0 * (1 - 0.80 * u), w = this.r0 * (0.21 - 0.11 * u), cs = Math.cos(th), sn = Math.sin(th);
-        this.seg.push({ u: u, cx: this.c.x + r * cs, cy: this.c.y + r * sn * this.tilt,
-          ix: this.c.x + (r - w / 2) * cs, iy: this.c.y + (r - w / 2) * sn * this.tilt, ox: this.c.x + (r + w / 2) * cs, oy: this.c.y + (r + w / 2) * sn * this.tilt,
-          depth: r * sn, tx: -sn, ty: cs * this.tilt });
-      }
-      for (var k = 0; k < this.N; k++) this.order.push(k);
-      var sg = this.seg; this.order.sort(function (a, b) { return sg[a].depth - sg[b].depth; });
-      var b = this.seg[0], vx = b.cx + S * 0.05, vy = b.cy - S * 0.10;
-      this.vest = { x: vx, y: vy, r: S * 0.028 };
-      this.canals = [{ x: vx + S * 0.03, y: vy - S * 0.12, rx: S * 0.07, ry: S * 0.115, rot: -0.35 }, { x: vx + S * 0.12, y: vy - S * 0.085, rx: S * 0.065, ry: S * 0.10, rot: 0.6 }, { x: vx + S * 0.09, y: vy + S * 0.005, rx: S * 0.095, ry: S * 0.042, rot: 0.15 }];
+      this.turns = 2.6; this.M = MOBILE ? 90 : 170;
+      this.cam = new Cam(MOBILE ? W * 0.5 : W * 0.47, MOBILE ? HV * 0.55 : HV * 0.56, S * (MOBILE ? 0.26 : 0.24), 0.55, 1.05, 5.5);
+      var self = this, cam = this.cam;
+      this.coil = function (u) { var th = u * self.turns * Math.PI * 2, r = 1.0 - 0.68 * u; return [r * Math.cos(th), r * Math.sin(th), 1.05 * u]; };
+      this.rad = function (u) { return 0.31 - 0.17 * u; };
+      // 정적 메시(달팽이관 튜브 + 전정 + 반고리관) → 오프스크린 2장(뒷면/앞면)
+      var quads = [], path = [], radii = [], n = MOBILE ? 150 : 260;
+      for (var i = 0; i <= n; i++) { var u = i / n; path.push(this.coil(u)); radii.push(this.rad(u)); }
+      tubeQuads(cam, path, radii, MOBILE ? 10 : 14, quads);
+      quads.forEach(function (q) { q.glass = true; });
+      // 첨부 캡(작은 구)
+      var ap = this.coil(1), sp = [], sr = [];
+      for (i = 0; i <= 6; i++) { var t = i / 6, ang = t * Math.PI / 2; sp.push([ap[0], ap[1], ap[2] + 0.14 * Math.sin(ang)]); sr.push(0.14 * Math.cos(ang) + 0.002); }
+      tubeQuads(cam, sp, sr, 10, quads);
+      // 전정(타원체) + 반고리관 3개 (전반고리관·후반고리관: 수직 45°, 외측반고리관: 수평)
+      var vc = [1.30, 0.20, 0.22], vp = [], vr = [];
+      for (i = 0; i <= 10; i++) { t = i / 10; ang = -Math.PI / 2 + t * Math.PI; vp.push([vc[0] + 0.36 * Math.sin(ang), vc[1], vc[2]]); vr.push(0.27 * Math.cos(ang) + 0.003); }
+      tubeQuads(cam, vp, vr, 12, quads, [0, 0, 1]);
+      var canals = [
+        { c: [1.55, 0.55, 0.62], e1: [0, 0, 1], e2: norm3([0.7, 0.7, 0]), R: 0.52 },
+        { c: [1.75, -0.05, 0.55], e1: [0, 0, 1], e2: norm3([0.7, -0.7, 0]), R: 0.48 },
+        { c: [1.70, 0.28, 0.20], e1: [1, 0, 0], e2: [0, 1, 0], R: 0.44 }
+      ];
+      canals.forEach(function (cn) {
+        var cp = [], cr = [], m = MOBILE ? 28 : 44;
+        for (var k = 0; k <= m; k++) { var a = 0.15 + (k / m) * (Math.PI * 2 - 0.30), x = cn.c[0] + cn.R * (Math.cos(a) * cn.e1[0] + Math.sin(a) * cn.e2[0]), y = cn.c[1] + cn.R * (Math.cos(a) * cn.e1[1] + Math.sin(a) * cn.e2[1]), z = cn.c[2] + cn.R * (Math.cos(a) * cn.e1[2] + Math.sin(a) * cn.e2[2]); cp.push([x, y, z]); cr.push(0.075 + 0.04 * Math.exp(-Math.pow((k / m - 0.06) / 0.08, 2))); }
+        tubeQuads(cam, cp, cr, 8, quads, cn.e1[2] === 1 ? [1, 0, 0] : [0, 0, 1]);
+      });
+      quads.sort(function (a, b) { return b.depth - a.depth; });
+      this.back = offscreen(); this.front = offscreen();
+      var bx = this.back.x, fx = this.front.x;
+      withCtx(bx, function () { quads.forEach(function (q) { if (q.glass && q.front) return; fillQuad(q.p, bone(q.s * (q.glass ? 0.55 : 1), q.glass ? 0.9 : 0.96), q.glass ? null : 'rgba(0,0,0,0.12)'); }); });
+      withCtx(fx, function () { quads.forEach(function (q) { if (!(q.glass && q.front)) return; fillQuad(q.p, bone(q.s, 0.14 + 0.22 * q.s), null); }); });
+      // 라벨 위치
+      this.pBase = cam.proj(this.coil(0)); this.pApex = cam.proj([ap[0], ap[1], ap[2] + 0.2]); this.pVest = cam.proj([vc[0], vc[1], vc[2] + 0.35]); this.pCan = cam.proj([1.62, 0.55, 1.15]);
+      var b0 = this.coil(0), b1 = this.coil(0.004); this.baseDir = norm3([b1[0] - b0[0], b1[1] - b0[1], b1[2] - b0[2]]);
+      this.pStapes = cam.proj([b0[0] - this.baseDir[0] * 0.28, b0[1] - this.baseDir[1] * 0.28, b0[2] - this.baseDir[2] * 0.28]);
+      this.pStapes2 = cam.proj([b0[0] - this.baseDir[0] * 0.75, b0[1] - this.baseDir[1] * 0.75, b0[2] - this.baseDir[2] * 0.75]);
     },
     wave: function (u, t, up) {
       var env = u <= up ? Math.exp(-Math.pow((u - up) / 0.24, 2)) : Math.exp(-Math.pow((u - up) / 0.06, 2));
       return env * Math.sin(2 * Math.PI * (u * 3 + u * u * 11) - t * 7);
     },
     draw: function (dt, t) {
-      var up = 0.16 + 0.66 * (0.5 + 0.5 * Math.sin(t * 0.28)), sg = this.seg, N = this.N, amp = this.amp, S = Math.min(W, HV);
-      for (var q = 0; q < 3; q++) { var cn = this.canals[q]; ctx.beginPath(); ctx.ellipse(cn.x, cn.y, cn.rx, cn.ry, cn.rot, 0, Math.PI * 2); ctx.lineWidth = 7; ctx.strokeStyle = white(0.10); ctx.stroke(); ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.55); ctx.stroke(); }
-      ctx.beginPath(); ctx.ellipse(this.vest.x, this.vest.y, this.vest.r * 1.4, this.vest.r, 0.2, 0, Math.PI * 2); ctx.fillStyle = white(0.10); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.5); ctx.stroke();
-      ctx.beginPath();
-      for (var i = 0; i <= N; i++) { var s0 = sg[i]; if (i === 0) ctx.moveTo(s0.ox, s0.oy); else ctx.lineTo(s0.ox, s0.oy); }
-      for (var j = N; j >= 0; j--) ctx.lineTo(sg[j].ix, sg[j].iy);
-      ctx.closePath(); ctx.fillStyle = white(0.06); ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = white(0.35); ctx.stroke();
-      var hw = amp * 0.55;
-      ctx.beginPath(); for (i = 0; i <= N; i++) { if (i === 0) ctx.moveTo(sg[i].ox, sg[i].oy - hw); else ctx.lineTo(sg[i].ox, sg[i].oy - hw); } ctx.lineWidth = 1; ctx.strokeStyle = white(0.22); ctx.stroke();
-      for (i = 0; i <= N; i += Math.round(N / 40)) tick(sg[i].ox, sg[i].oy, sg[i].ox, sg[i].oy - hw, 0.18);
-      var h = new Array(N + 1);
-      for (i = 0; i <= N; i++) h[i] = this.wave(sg[i].u, t, up);
-      for (var o = 0; o < N; o++) {
-        var k = this.order[o], a = sg[k], b = sg[k + 1], ha = h[k] * amp, hb = h[k + 1] * amp, hm = (h[k] + h[k + 1]) / 2;
-        ctx.beginPath(); ctx.moveTo(a.ix, a.iy - ha); ctx.lineTo(a.ox, a.oy - ha); ctx.lineTo(b.ox, b.oy - hb); ctx.lineTo(b.ix, b.iy - hb); ctx.closePath();
-        ctx.fillStyle = hm > 0 ? crest(hm, 0.45 + 0.5 * hm) : 'rgba(160,120,40,' + (0.32 + 0.2 * hm) + ')';
-        ctx.fill(); ctx.strokeStyle = hm > 0.2 ? white(0.25 + 0.6 * hm) : amber(0.45); ctx.lineWidth = 0.8; ctx.stroke();
+      var up = 0.16 + 0.66 * (0.5 + 0.5 * Math.sin(t * 0.28)), cam = this.cam, M = this.M, S = Math.min(W, HV);
+      ctx.drawImage(this.back.c, 0, 0, W, H);
+      // 기저막 리본(튜브 내부, 방사 방향으로 걸쳐진 막) — 진행파 변위를 z로
+      var quads = [], SL = 4, prev = null;
+      for (var i = 0; i <= M; i++) {
+        var u = i / M, c = this.coil(u), th = u * this.turns * Math.PI * 2, er = [Math.cos(th), Math.sin(th), 0], a = this.rad(u) * 0.86, h = this.wave(u, t, up), row = [];
+        for (var j = 0; j <= SL; j++) { var sv = -1 + 2 * j / SL, z = h * a * 0.85 * (1 - sv * sv); var p = cam.proj([c[0] + er[0] * a * sv, c[1] + er[1] * a * sv, c[2] + z]); row.push(p); }
+        if (prev) for (j = 0; j < SL; j++) quads.push({ p: [prev[j], prev[j + 1], row[j + 1], row[j]], depth: (prev[j].depth + row[j + 1].depth) / 2, h: h });
+        prev = row;
       }
-      var pk = sg[Math.round(up * N)];
-      var g = ctx.createRadialGradient(pk.cx, pk.cy, 0, pk.cx, pk.cy, S * 0.20);
-      g.addColorStop(0, amber(0.32)); g.addColorStop(0.5, amber(0.10)); g.addColorStop(1, amber(0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      var b0 = sg[0], push = Math.sin(t * 7) * 3.5, fx = b0.cx - b0.tx * push, fy = b0.cy - b0.ty * push, nx = -b0.ty, ny = b0.tx, fw = Math.hypot(b0.ox - b0.ix, b0.oy - b0.iy) / 2;
-      ctx.lineWidth = 3; ctx.strokeStyle = white(0.85); ctx.beginPath(); ctx.moveTo(fx - nx * fw, fy - ny * fw); ctx.lineTo(fx + nx * fw, fy + ny * fw); ctx.stroke();
-      var hx = fx - b0.tx * 30, hy = fy - b0.ty * 30;
-      ctx.lineWidth = 2; ctx.strokeStyle = white(0.6); ctx.beginPath(); ctx.moveTo(fx - nx * fw * 0.8, fy - ny * fw * 0.8); ctx.lineTo(hx, hy); ctx.lineTo(fx + nx * fw * 0.8, fy + ny * fw * 0.8); ctx.stroke();
-      ctx.fillStyle = white(0.9); ctx.beginPath(); ctx.arc(hx, hy, 4, 0, Math.PI * 2); ctx.fill();
-      var per = 2 * Math.PI / 7, ph = (t % per) / per;
-      for (var r = 0; r < 4; r++) { var rr = (ph + r / 4) % 1; ctx.beginPath(); ctx.arc(fx, fy, 10 + rr * 60, Math.PI * 0.72, Math.PI * 1.28); ctx.strokeStyle = white(0.5 * (1 - rr)); ctx.lineWidth = 1.2; ctx.stroke(); }
-      label(L('음파', 'sound'), fx - 78, fy + 4, 'center', 0.5);
-      label(L('등골 · 난원창', 'stapes · oval window'), hx - 6, hy - 14, 'right');
-      label(L('반고리관 (평형)', 'semicircular canals'), this.canals[1].x + S * 0.10, this.canals[0].y - S * 0.10, 'left');
-      label(L('달팽이관 · 기저막', 'cochlea · basilar membrane'), this.c.x, this.c.y + this.r0 * 1.25 * this.tilt + 40, 'center', 0.75);
-      var ap = sg[N]; label(L('첨부 (저주파)', 'apex · low f'), ap.cx, ap.cy - 26, 'center', 0.5);
-      label(L('기저부 (고주파)', 'base · high f'), b0.cx + 6, b0.cy + 30, 'left', 0.5);
-      label(L('최대 응답', 'peak response'), pk.cx, pk.cy - amp - 18, 'center', 0.6);
+      quads.sort(function (a, b) { return b.depth - a.depth; });
+      for (i = 0; i < quads.length; i++) { var q = quads[i], hm = q.h; fillQuad(q.p, hm > 0 ? crest(hm, 0.75 + 0.25 * hm) : 'rgba(170,120,30,' + (0.7 + 0.25 * hm) + ')', hm > 0.2 ? white(0.35 + 0.5 * hm) : amber(0.5)); }
+      // 최대 응답 글로우
+      var pc = this.coil(up), pk = cam.proj([pc[0], pc[1], pc[2] + 0.1]);
+      var g = ctx.createRadialGradient(pk.x, pk.y, 0, pk.x, pk.y, S * 0.16); g.addColorStop(0, amber(0.35)); g.addColorStop(0.5, amber(0.10)); g.addColorStop(1, amber(0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.drawImage(this.front.c, 0, 0, W, H);      // 반투명 앞면(유리 같은 뼈 벽)
+      // 등골(피스톤) — 난원창(기저부 입구)을 밀어 넣음
+      var ps = this.pStapes, p2 = this.pStapes2, dx = ps.x - p2.x, dy = ps.y - p2.y, dl = Math.hypot(dx, dy) || 1, tx = dx / dl, ty = dy / dl, nx = -ty, ny = tx, push = Math.sin(t * 7) * 3.5;
+      var fx = ps.x + tx * push, fy = ps.y + ty * push, fw = S * 0.05;
+      ctx.lineWidth = 4; ctx.strokeStyle = white(0.9); ctx.beginPath(); ctx.moveTo(fx - nx * fw, fy - ny * fw); ctx.lineTo(fx + nx * fw, fy + ny * fw); ctx.stroke();
+      var hx = fx - tx * S * 0.07, hy = fy - ty * S * 0.07;
+      ctx.lineWidth = 2.5; ctx.strokeStyle = white(0.7); ctx.beginPath(); ctx.moveTo(fx - nx * fw * 0.8, fy - ny * fw * 0.8); ctx.lineTo(hx, hy); ctx.lineTo(fx + nx * fw * 0.8, fy + ny * fw * 0.8); ctx.stroke();
+      ctx.fillStyle = white(0.95); ctx.beginPath(); ctx.arc(hx, hy, 4.5, 0, Math.PI * 2); ctx.fill();
+      var per = 2 * Math.PI / 7, ph = (t % per) / per, ba = Math.atan2(-ty, -tx);
+      for (var r = 0; r < 4; r++) { var rr = (ph + r / 4) % 1; ctx.beginPath(); ctx.arc(hx, hy, 8 + rr * S * 0.09, ba - 0.6, ba + 0.6); ctx.strokeStyle = white(0.55 * (1 - rr)); ctx.lineWidth = 1.3; ctx.stroke(); }
+      // 라벨
+      label(L('음파 (등골 → 난원창)', 'sound (stapes → oval window)'), hx - tx * S * 0.10, hy - ty * S * 0.10 + 4, tx > 0 ? 'right' : 'left', 0.7);
+      label(L('달팽이관 (기저막 진행파)', 'cochlea · traveling wave'), cam.cx, cam.cy + S * 0.30, 'center', 0.8);
+      label(L('첨부 (저주파)', 'apex · low f'), this.pApex.x, this.pApex.y - 8, 'center', 0.6);
+      label(L('기저부 (고주파)', 'base · high f'), this.pBase.x, this.pBase.y + 30, 'center', 0.6);
+      label(L('전정', 'vestibule'), this.pVest.x, this.pVest.y - 6, 'center', 0.6);
+      label(L('반고리관 (평형 감각)', 'semicircular canals'), this.pCan.x, this.pCan.y - 6, 'center', 0.7);
+      label(L('최대 응답', 'peak'), pk.x, pk.y - 22, 'center', 0.7);
     }
   };
 
-  /* ================= shoulder: 견갑골·쇄골·상완골, 외전 운동 + FE 응력 ================= */
+  /* ================= shoulder: 실제 해부학 윤곽(견갑골·쇄골·상완골) + 외전 운동 + FE 응력 ================= */
   var shoulder = {
     ko: '어깨 관절 유한요소 해석 · 회전근개 연구', en: 'Shoulder finite-element analysis · rotator cuff',
     init: function () {
-      var S = Math.min(W, HV), R = S * (MOBILE ? 0.11 : 0.115);
-      this.R = R; this.G = MOBILE ? { x: W * 0.46, y: HV * 0.40 } : { x: W * 0.52, y: HV * (COMPACT ? 0.52 : 0.42) };
+      var S = Math.min(W, HV), R = S * (MOBILE ? 0.11 : 0.12);
+      this.R = R; this.G = MOBILE ? { x: W * 0.46, y: HV * 0.40 } : { x: W * 0.47, y: HV * (COMPACT ? 0.52 : 0.44) };
       this.head = { r: 0.62, rings: MOBILE ? 4 : 6, sect: MOBILE ? 18 : 28 };
-      this.shaft = { rows: MOBILE ? 10 : 16, cols: MOBILE ? 4 : 5, len: 3.3, w0: 0.6, w1: 0.48 };
-      this.bar = { x: W * (MOBILE ? 0.84 : 0.86), y: HV * 0.62, w: 10, h: Math.min(110, HV * 0.16) };
-      this.scap = [[-0.25, -0.55], [-0.32, -0.85], [-0.05, -1.02], [0.35, -1.12], [0.66, -1.0], [0.45, -0.82], [0.05, -0.78], [-0.55, -0.72], [-1.35, -0.95], [-1.75, -0.55], [-1.85, 0.1], [-1.55, 1.05], [-1.2, 1.75], [-0.55, 0.9], [-0.28, 0.55]];
-      this.spine = [[-1.7, -0.5], [-0.5, -0.75], [0.35, -1.0]];
-      this.clav = [[-2.4, -1.4], [-1.6, -1.5], [-0.8, -1.28], [0.0, -1.3], [0.5, -1.1]];
-      this.cuff = [{ from: [-1.2, -0.85], ang: -1.35 }, { from: [-1.35, 0.35], ang: -0.45 }, { from: [-1.2, 1.1], ang: 0.15 }];
+      this.shaft = { rows: MOBILE ? 6 : 10, cols: MOBILE ? 4 : 5, len: 1.5, w0: 0.56, w1: 0.52 };
+      this.bar = { x: W * (MOBILE ? 0.84 : 0.56), y: HV * (MOBILE ? 0.62 : 0.72), w: 10, h: Math.min(90, HV * 0.12) };
+      // 견갑골 몸통(앞면 보기, 오른쪽 어깨: 안쪽 경계 왼쪽, 관절와 오른쪽)
+      this.scap = resample([[-0.36, -0.62], [-0.58, -0.82], [-0.78, -1.02], [-1.10, -1.10], [-1.55, -0.98], [-1.78, -0.55], [-1.86, 0.05], [-1.80, 0.70], [-1.62, 1.30], [-1.36, 1.82], [-1.12, 1.56], [-0.78, 0.98], [-0.52, 0.58], [-0.36, 0.56], [-0.50, 0.0]], 90);
+      this.coracoid = resample([[-0.66, -0.78], [-0.62, -1.02], [-0.36, -1.18], [0.04, -1.14], [0.14, -0.98], [-0.14, -0.94], [-0.42, -0.86]], 40);
+      this.acromion = resample([[-0.40, -1.24], [0.08, -1.38], [0.56, -1.32], [0.74, -1.12], [0.60, -0.98], [0.26, -1.02], [-0.18, -1.06]], 40);
+      this.clav = resample([[-2.50, -1.30], [-2.40, -1.48], [-1.70, -1.60], [-0.95, -1.42], [-0.25, -1.44], [0.42, -1.30], [0.46, -1.16], [-0.20, -1.26], [-0.95, -1.24], [-1.70, -1.42], [-2.40, -1.32]], 70);
+      // 상완골(국소 좌표: x 바깥쪽, y 아래 = 뼈축) — 골두·해부학적 경부·대결절·외과적 경부·삼각근 조면
+      this.hum = resample([[-0.62, -0.06], [-0.58, -0.32], [-0.42, -0.52], [-0.20, -0.61], [0.06, -0.62], [0.28, -0.56], [0.40, -0.64], [0.60, -0.62], [0.72, -0.44], [0.68, -0.22], [0.58, -0.06], [0.44, 0.16], [0.32, 0.46], [0.30, 1.20], [0.36, 1.80], [0.30, 2.40], [0.30, 3.30], [-0.26, 3.30], [-0.26, 2.00], [-0.28, 1.00], [-0.30, 0.46], [-0.46, 0.20], [-0.58, 0.06]], 110);
+      this.cuff = [{ from: [-1.30, -0.95], to: [0.50, -0.62], via: [-0.30, -1.0], n: 'sup' }, { from: [-1.40, 0.40], to: [-0.06, -0.14], via: [-0.8, 0.2], n: 'sub' }, { from: [-1.20, 1.00], to: [0.64, -0.28], via: [-0.4, 0.6], n: 'inf' }];
     },
-    P: function (p, rot) {
-      var R = this.R, px = p[0] * R, py = p[1] * R, pvx = -1.0 * R, pvy = 0.6 * R, cs = Math.cos(rot), sn = Math.sin(rot), dx = px - pvx, dy = py - pvy;
-      return { x: this.G.x + pvx + dx * cs - dy * sn, y: this.G.y + pvy + dx * sn + dy * cs };
-    },
+    P: function (p, rot) { var R = this.R, px = p[0] * R, py = p[1] * R, pvx = -1.0 * R, pvy = 0.6 * R, cs = Math.cos(rot), sn = Math.sin(rot), dx = px - pvx, dy = py - pvy; return { x: this.G.x + pvx + dx * cs - dy * sn, y: this.G.y + pvy + dx * sn + dy * cs }; },
+    boneFill: function (pts, cx, cy, r) { var g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r * 1.6); g.addColorStop(0, 'rgba(240,232,214,0.96)'); g.addColorStop(1, 'rgba(184,170,142,0.96)'); tracePath(pts, true); ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(110,96,70,0.9)'; ctx.stroke(); },
     draw: function (dt, t) {
-      var R = this.R, G = this.G;
-      var abd = 0.10 + 0.72 * (0.5 - 0.5 * Math.cos(t * 0.55)), load = 0.55 + 0.45 * Math.sin(t * 0.55 - 0.6), srot = -abd * 0.33;
-      var self = this, P = function (p) { return self.P(p, srot); };
-      ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.10);
+      var R = this.R, G = this.G, abd = 0.10 + 0.72 * (0.5 - 0.5 * Math.cos(t * 0.55)), load = 0.55 + 0.45 * Math.sin(t * 0.55 - 0.6), srot = -abd * 0.33;
+      var self = this, P = function (p) { return self.P(p, srot); }, Pm = function (pts) { return pts.map(function (p) { var q = P(p); return [q.x, q.y]; }); };
+      ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(236,226,206,0.10)';
       for (var i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(G.x - 3.2 * R, G.y + (0.3 + i * 0.75) * R, 1.9 * R, -0.55, 0.55); ctx.stroke(); }
       var C = P([0.18, 0]);
-      var cl = this.clav.map(P); ctx.beginPath(); ctx.moveTo(cl[0].x, cl[0].y);
-      for (i = 1; i < cl.length; i++) ctx.quadraticCurveTo(cl[i - 1].x, cl[i - 1].y, (cl[i - 1].x + cl[i].x) / 2, (cl[i - 1].y + cl[i].y) / 2);
-      ctx.lineWidth = 9; ctx.strokeStyle = white(0.12); ctx.stroke(); ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.6); ctx.stroke();
-      var sc = this.scap.map(P);
-      ctx.beginPath(); ctx.moveTo(sc[0].x, sc[0].y);
-      for (i = 1; i < sc.length; i++) ctx.quadraticCurveTo(sc[i - 1].x, sc[i - 1].y, (sc[i - 1].x + sc[i].x) / 2, (sc[i - 1].y + sc[i].y) / 2);
-      ctx.lineTo(sc[sc.length - 1].x, sc[sc.length - 1].y);
-      ctx.arc(C.x, C.y, 0.68 * R, Math.PI * 0.69 + srot, Math.PI * 1.31 + srot, false);
-      ctx.closePath(); ctx.fillStyle = white(0.08); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.6); ctx.stroke();
-      var sp = this.spine.map(P); ctx.beginPath(); ctx.moveTo(sp[0].x, sp[0].y); ctx.quadraticCurveTo(sp[1].x, sp[1].y, sp[2].x, sp[2].y); ctx.strokeStyle = white(0.35); ctx.stroke();
+      // 견갑골 몸통 + 관절와(오목) + 견갑극 + 오훼돌기
+      var sc = Pm(this.scap);
+      this.boneFill(sc, G.x - R, G.y + R * 0.3, R * 1.6);
+      ctx.beginPath(); ctx.arc(C.x, C.y, 0.68 * R, Math.PI * 0.69 + srot, Math.PI * 1.31 + srot, false); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(160,210,240,0.85)'; ctx.stroke(); // 관절와 연골
+      var s1 = P([-1.66, -0.62]), s2 = P([-0.40, -1.20]); ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(120,105,78,0.45)'; ctx.stroke();
+      this.boneFill(Pm(this.coracoid), G.x - R * 0.3, G.y - R, R * 0.6);
+      // 상완골(외전만큼 회전) — 뼈 실루엣 + FE 요소망(근위부)
+      var cs = Math.cos(-abd), sn = Math.sin(-abd), H2 = function (p) { return [C.x + (p[0] * cs - p[1] * sn) * R, C.y + (p[0] * sn + p[1] * cs) * R]; };
+      var hp = this.hum.map(H2); this.boneFill(hp, C.x, C.y + R * 0.6, R * 1.4);
       var ca = Math.PI + srot - abd * 0.35, contact = { x: C.x + 0.62 * R * Math.cos(ca), y: C.y + 0.62 * R * Math.sin(ca) };
-      var gg = ctx.createRadialGradient(contact.x, contact.y, 0, contact.x, contact.y, R * 0.9);
-      gg.addColorStop(0, heat(load, 0.55)); gg.addColorStop(1, heat(load, 0)); ctx.fillStyle = gg; ctx.fillRect(contact.x - R, contact.y - R, 2 * R, 2 * R);
+      ctx.save(); tracePath(hp, true); ctx.clip();
       var hd = this.head, hr = hd.r * R;
-      for (var ri = 0; ri < hd.rings; ri++) {
-        var r0 = hr * ri / hd.rings, r1 = hr * (ri + 1) / hd.rings;
-        for (var si = 0; si < hd.sect; si++) {
-          var a0 = si / hd.sect * Math.PI * 2, a1 = (si + 1) / hd.sect * Math.PI * 2, am = (a0 + a1) / 2, rm = (r0 + r1) / 2;
-          var s = Math.exp(-Math.hypot(C.x + rm * Math.cos(am) - contact.x, C.y + rm * Math.sin(am) - contact.y) / (hr * 0.75)) * load;
-          ctx.fillStyle = heat(s, 0.85); ctx.strokeStyle = white(0.12); ctx.beginPath();
-          ctx.moveTo(C.x + r0 * Math.cos(a0), C.y + r0 * Math.sin(a0)); ctx.lineTo(C.x + r1 * Math.cos(a0), C.y + r1 * Math.sin(a0));
-          ctx.lineTo(C.x + r1 * Math.cos(a1), C.y + r1 * Math.sin(a1)); ctx.lineTo(C.x + r0 * Math.cos(a1), C.y + r0 * Math.sin(a1)); ctx.closePath(); ctx.fill(); ctx.stroke();
-        }
-      }
-      ctx.beginPath(); ctx.arc(C.x, C.y, hr, 0, Math.PI * 2); ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.7); ctx.stroke();
-      var sh = this.shaft, dir = { x: Math.sin(abd), y: Math.cos(abd) }, nrm = { x: dir.y, y: -dir.x }, l0 = hr * 0.85, L1 = sh.len * R;
-      for (var rw = 0; rw < sh.rows; rw++) {
-        var la = l0 + L1 * rw / sh.rows, lb = l0 + L1 * (rw + 1) / sh.rows, wa = lerp(sh.w0, sh.w1, rw / sh.rows) * R, wb = lerp(sh.w0, sh.w1, (rw + 1) / sh.rows) * R;
-        for (var cl2 = 0; cl2 < sh.cols; cl2++) {
-          var u0 = cl2 / sh.cols - 0.5, u1 = (cl2 + 1) / sh.cols - 0.5, bend = Math.abs((u0 + u1) / 2) * 2 * (1 - rw / sh.rows) * load * 0.7;
-          ctx.fillStyle = heat(bend, 0.75); ctx.strokeStyle = white(0.10); ctx.beginPath();
-          ctx.moveTo(C.x + dir.x * la + nrm.x * u0 * wa, C.y + dir.y * la + nrm.y * u0 * wa); ctx.lineTo(C.x + dir.x * lb + nrm.x * u0 * wb, C.y + dir.y * lb + nrm.y * u0 * wb);
-          ctx.lineTo(C.x + dir.x * lb + nrm.x * u1 * wb, C.y + dir.y * lb + nrm.y * u1 * wb); ctx.lineTo(C.x + dir.x * la + nrm.x * u1 * wa, C.y + dir.y * la + nrm.y * u1 * wa); ctx.closePath(); ctx.fill(); ctx.stroke();
-        }
-      }
-      var ex = C.x + dir.x * (l0 + L1), ey = C.y + dir.y * (l0 + L1);
-      ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.6);
-      ctx.beginPath(); ctx.moveTo(C.x + dir.x * l0 - nrm.x * sh.w0 * R / 2, C.y + dir.y * l0 - nrm.y * sh.w0 * R / 2); ctx.lineTo(ex - nrm.x * sh.w1 * R / 2, ey - nrm.y * sh.w1 * R / 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(C.x + dir.x * l0 + nrm.x * sh.w0 * R / 2, C.y + dir.y * l0 + nrm.y * sh.w0 * R / 2); ctx.lineTo(ex + nrm.x * sh.w1 * R / 2, ey + nrm.y * sh.w1 * R / 2); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(ex, ey, sh.w1 * R * 0.75, sh.w1 * R * 0.45, Math.atan2(dir.y, dir.x), 0, Math.PI * 2); ctx.fillStyle = white(0.10); ctx.fill(); ctx.stroke();
-      for (i = 0; i < this.cuff.length; i++) {
-        var cf = this.cuff[i], f = P(cf.from), ang = cf.ang - abd, ax = C.x + hr * Math.cos(ang), ay = C.y + hr * Math.sin(ang), tension = 0.35 + 0.65 * Math.max(0, Math.cos(cf.ang + 1.0 + abd * 0.8)) * load;
-        ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.quadraticCurveTo((f.x + ax) / 2, (f.y + ay) / 2 - R * 0.35 * (i === 0 ? 1 : 0.2), ax, ay);
-        ctx.lineWidth = 5; ctx.strokeStyle = amber(0.3 + 0.65 * tension); ctx.stroke(); ctx.lineWidth = 1;
-      }
+      for (var ri = 0; ri < hd.rings; ri++) { var r0 = hr * ri / hd.rings, r1 = hr * (ri + 1) / hd.rings;
+        for (var si = 0; si < hd.sect; si++) { var a0 = si / hd.sect * Math.PI * 2, a1 = (si + 1) / hd.sect * Math.PI * 2, am = (a0 + a1) / 2, rm = (r0 + r1) / 2;
+          var sv = Math.exp(-Math.hypot(C.x + rm * Math.cos(am) - contact.x, C.y + rm * Math.sin(am) - contact.y) / (hr * 0.75)) * load;
+          ctx.fillStyle = heat(sv, 0.82); ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath();
+          ctx.moveTo(C.x + r0 * Math.cos(a0), C.y + r0 * Math.sin(a0)); ctx.lineTo(C.x + r1 * Math.cos(a0), C.y + r1 * Math.sin(a0)); ctx.lineTo(C.x + r1 * Math.cos(a1), C.y + r1 * Math.sin(a1)); ctx.lineTo(C.x + r0 * Math.cos(a1), C.y + r0 * Math.sin(a1)); ctx.closePath(); ctx.fill(); ctx.stroke(); } }
+      var sh = this.shaft, dir = { x: Math.sin(abd), y: Math.cos(abd) }, nrm = { x: dir.y, y: -dir.x }, l0 = hr * 0.8, L1 = sh.len * R;
+      for (var rw = 0; rw < sh.rows; rw++) { var la = l0 + L1 * rw / sh.rows, lb = l0 + L1 * (rw + 1) / sh.rows, wa = lerp(sh.w0, sh.w1, rw / sh.rows) * R * 1.3, wb = lerp(sh.w0, sh.w1, (rw + 1) / sh.rows) * R * 1.3;
+        for (var cl2 = 0; cl2 < sh.cols; cl2++) { var u0 = cl2 / sh.cols - 0.5, u1 = (cl2 + 1) / sh.cols - 0.5, bend = Math.abs((u0 + u1) / 2) * 2 * (1 - rw / sh.rows) * load * 0.7;
+          ctx.fillStyle = heat(bend, 0.72); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.beginPath();
+          ctx.moveTo(C.x + dir.x * la + nrm.x * u0 * wa, C.y + dir.y * la + nrm.y * u0 * wa); ctx.lineTo(C.x + dir.x * lb + nrm.x * u0 * wb, C.y + dir.y * lb + nrm.y * u0 * wb); ctx.lineTo(C.x + dir.x * lb + nrm.x * u1 * wb, C.y + dir.y * lb + nrm.y * u1 * wb); ctx.lineTo(C.x + dir.x * la + nrm.x * u1 * wa, C.y + dir.y * la + nrm.y * u1 * wa); ctx.closePath(); ctx.fill(); ctx.stroke(); } }
+      ctx.restore();
+      // 골두 연골 + 소결절·이두근구 표시
+      ctx.beginPath(); ctx.arc(C.x, C.y, hr + 1.5, Math.PI * 0.85 - abd, Math.PI * 1.75 - abd); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(160,210,240,0.7)'; ctx.stroke();
+      var lt = H2([-0.06, -0.24]); ctx.beginPath(); ctx.ellipse(lt[0], lt[1], R * 0.12, R * 0.09, -abd, 0, Math.PI * 2); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(110,96,70,0.7)'; ctx.stroke();
+      var g1 = H2([0.18, -0.40]), g2 = H2([0.20, 0.30]); ctx.beginPath(); ctx.moveTo(g1[0], g1[1]); ctx.lineTo(g2[0], g2[1]); ctx.stroke();
+      // 회전근개(근육 색) — 견갑골 → 결절
+      for (i = 0; i < this.cuff.length; i++) { var cf = this.cuff[i], f = P(cf.from), v = P(cf.via), a = H2(cf.to), tension = 0.35 + 0.65 * Math.max(0, Math.cos((i - 1) * 0.9 + abd * 0.8)) * load;
+        ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.quadraticCurveTo(v.x, v.y, a[0], a[1]); ctx.lineCap = 'round'; ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(214,92,72,' + (0.45 + 0.5 * tension) + ')'; ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,200,180,' + (0.2 + 0.4 * tension) + ')'; ctx.stroke(); ctx.lineCap = 'butt'; }
+      // 견봉·쇄골(앞에 그림)
+      this.boneFill(Pm(this.acromion), G.x + R * 0.2, G.y - R * 1.2, R * 0.6);
+      this.boneFill(Pm(this.clav), G.x - R, G.y - R * 1.4, R * 1.4);
+      // 외전 각도
       var deg = Math.round(abd * 180 / Math.PI);
-      ctx.beginPath(); ctx.arc(C.x, C.y, R * 1.55, Math.PI / 2 - abd, Math.PI / 2); ctx.lineWidth = 1; ctx.strokeStyle = white(0.4); ctx.stroke();
-      ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(C.x, C.y + hr); ctx.lineTo(C.x, C.y + R * 1.75); ctx.stroke(); ctx.setLineDash([]);
-      label(L('외전 ', 'abduction ') + deg + '°', C.x + R * 1.7 * Math.sin(abd / 2) + 8, C.y + R * 1.7 * Math.cos(abd / 2), 'left', 0.7);
-      var ls = P([-1.15, 0.45]); label(L('견갑골', 'scapula'), ls.x, ls.y, 'center', 0.6);
-      var lc = P([-1.6, -1.7]); label(L('쇄골', 'clavicle'), lc.x, lc.y, 'center', 0.6);
-      label(L('상완골', 'humerus'), ex + nrm.x * (sh.w1 * R + 14) - 10, ey + nrm.y * (sh.w1 * R + 14) + 4, 'left', 0.6);
-      var lr = P([-0.7, -1.15]); label(L('회전근개', 'rotator cuff'), lr.x, lr.y, 'center', 0.6); ctx.fillStyle = amber(0.9); ctx.fillRect(lr.x - 32, lr.y + 5, 64, 2);
-      var b = this.bar;
-      for (var k = 0; k < 24; k++) { ctx.fillStyle = heat(1 - k / 23, 0.95); ctx.fillRect(b.x, b.y + b.h * k / 24, b.w, b.h / 24 + 1); }
-      label('von Mises', b.x + 15, b.y + 10, 'left', 0.55); label('max', b.x + 15, b.y + 24, 'left', 0.55); label('0', b.x + 15, b.y + b.h, 'left', 0.55);
+      ctx.beginPath(); ctx.arc(C.x, C.y, R * 1.9, Math.PI / 2 - abd, Math.PI / 2); ctx.lineWidth = 1; ctx.strokeStyle = white(0.45); ctx.stroke();
+      ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(C.x, C.y + hr); ctx.lineTo(C.x, C.y + R * 2.1); ctx.stroke(); ctx.setLineDash([]);
+      label(L('외전 ', 'abduction ') + deg + '°', C.x + R * 2.0 * Math.sin(abd / 2) + 10, C.y + R * 2.0 * Math.cos(abd / 2), 'left', 0.75);
+      // 라벨
+      var lp = P([-1.25, 0.55]); label(L('견갑골', 'scapula'), lp.x, lp.y, 'center', 0.7);
+      lp = P([-1.5, -1.80]); label(L('쇄골', 'clavicle'), lp.x, lp.y, 'center', 0.7);
+      lp = P([0.55, -1.50]); label(L('견봉', 'acromion'), lp.x, lp.y, 'center', 0.6);
+      lp = P([-0.55, -1.30]); label(L('오훼돌기', 'coracoid'), lp.x - 14, lp.y + 12, 'right', 0.5);
+      lp = H2([0.9, -0.5]); label(L('대결절', 'greater tubercle'), lp[0] + 4, lp[1], 'left', 0.5);
+      lp = H2([0.5, 2.6]); label(L('상완골', 'humerus'), lp[0] + 6, lp[1], 'left', 0.7);
+      lp = P([-1.1, 1.25]); label(L('회전근개', 'rotator cuff'), lp.x, lp.y + 16, 'center', 0.6); ctx.fillStyle = 'rgba(214,92,72,0.9)'; ctx.fillRect(lp.x - 30, lp.y + 21, 60, 2);
+      var b = this.bar; for (var k = 0; k < 24; k++) { ctx.fillStyle = heat(1 - k / 23, 0.95); ctx.fillRect(b.x, b.y + b.h * k / 24, b.w, b.h / 24 + 1); }
+      label('von Mises', b.x + 15, b.y + 10, 'left', 0.6); label('max', b.x + 15, b.y + 24, 'left', 0.55); label('0', b.x + 15, b.y + b.h, 'left', 0.55);
     }
   };
 
-  /* ================= skull: 두개골 옆모습 — 진동 전달 (tVAS) ================= */
+  /* ================= skull: 실제 옆모습 두개골(두꺼운 두개관·안와·광대활·하악골·치아) + 뇌 — 진동 전달(tVAS) ================= */
   var skull = {
     ko: '두개골 진동 전달 · 뇌척수액 응답 (tVAS)', en: 'Skull-borne vibration · CSF response (tVAS)',
     init: function () {
-      var S = Math.min(W, HV), s = S * (MOBILE ? 0.42 : 0.37);
-      this.s = s; this.c = MOBILE ? { x: W * 0.5, y: HV * 0.5 } : { x: W * 0.58, y: HV * 0.52 };
+      var S = Math.min(W, HV), s = S * (MOBILE ? 0.40 : 0.33);
+      this.s = s; this.c = MOBILE ? { x: W * 0.5, y: HV * 0.5 } : { x: W * 0.47, y: HV * 0.55 };
       var self = this, T = function (p) { return [self.c.x + p[0] * s, self.c.y + p[1] * s]; };
-      var prof = [[-0.80, -0.12], [-0.86, -0.36], [-0.76, -0.64], [-0.52, -0.87], [-0.20, -0.99], [0.16, -1.0], [0.50, -0.90], [0.78, -0.68], [0.92, -0.38], [0.94, -0.04], [0.86, 0.28], [0.66, 0.50], [0.48, 0.58], [0.40, 0.52],
-                  [0.36, 0.80], [0.10, 0.98], [-0.30, 1.02], [-0.52, 0.94], [-0.58, 0.72], [-0.70, 0.64], [-0.74, 0.44], [-0.86, 0.30], [-0.92, 0.10]];
-      this.N = MOBILE ? 110 : 200; this.outline = resample(prof.map(T), this.N); this.nrm = [];
-      for (var i = 0; i < this.N; i++) { var a = this.outline[(i + 1) % this.N], b = this.outline[(i - 1 + this.N) % this.N], dx = a[0] - b[0], dy = a[1] - b[1], l = Math.hypot(dx, dy) || 1; this.nrm.push([dy / l, -dx / l]); }
-      this.orbit = T([-0.56, -0.14]); this.orbitR = [0.18 * s, 0.15 * s];
-      this.zyg = [T([-0.62, 0.18]), T([-0.2, 0.12]), T([0.22, 0.16])]; this.ear = T([0.40, 0.30]);
-      this.teeth = []; for (var k = 0; k < 6; k++) this.teeth.push(T([-0.70 + k * 0.07, 0.66 + k * 0.03]));
-      this.jawline = [T([0.40, 0.52]), T([0.30, 0.55]), T([-0.1, 0.72])];
-      this.brainC = T([0.06, -0.30]); this.brainR = [0.68 * s, 0.50 * s]; this.brain = []; var M = MOBILE ? 90 : 160;
-      for (i = 0; i < M; i++) { var th = i / M * Math.PI * 2, w = 1 + 0.035 * Math.sin(th * 9) + 0.02 * Math.sin(th * 17); this.brain.push([this.brainC[0] + this.brainR[0] * w * Math.cos(th), this.brainC[1] + this.brainR[1] * w * Math.sin(th)]); }
-      this.cereb = T([0.50, 0.24]); this.stem = [T([0.36, 0.30]), T([0.42, 0.52])];
-      this.sulci = [[T([-0.05, -0.78]), T([0.12, -0.45]), T([0.02, -0.10])], [T([-0.55, -0.15]), T([-0.1, -0.05]), T([0.35, 0.02])]];
-      this.inner = []; var rings = MOBILE ? 5 : 8, per = MOBILE ? 22 : 40;
-      for (var r = 1; r <= rings; r++) for (i = 0; i < per; i++) { var an = i / per * Math.PI * 2 + r * 0.17, q = r / (rings + 0.8); this.inner.push({ x: this.brainC[0] + this.brainR[0] * 0.92 * q * Math.cos(an), y: this.brainC[1] + this.brainR[1] * 0.92 * q * Math.sin(an) }); }
-      this.act = [T([0.52, 0.52]), T([0.16, -1.0])]; this.L = s * 1.1;
+      var vault = [[-0.80, -0.14], [-0.85, -0.34], [-0.81, -0.54], [-0.69, -0.72], [-0.49, -0.86], [-0.25, -0.96], [0.06, -1.00], [0.36, -0.96], [0.62, -0.84], [0.80, -0.64], [0.92, -0.40], [0.95, -0.12], [0.91, 0.14], [0.80, 0.36], [0.64, 0.50], [0.50, 0.56]];
+      var face = [[0.44, 0.63], [0.36, 0.52], [0.30, 0.44], [0.10, 0.50], [-0.10, 0.60], [-0.40, 0.66], [-0.58, 0.64], [-0.68, 0.56], [-0.74, 0.44], [-0.81, 0.32], [-0.85, 0.16], [-0.91, 0.00], [-0.86, -0.08]];
+      this.N = MOBILE ? 90 : 160;
+      var outer = resample(vault.concat(face).map(T), this.N), cen = T([0.05, -0.20]);
+      this.vault = outer; this.nrm = []; this.inner = [];
+      for (var i = 0; i < this.N; i++) { var a = outer[(i + 1) % this.N], b = outer[(i - 1 + this.N) % this.N], dx = a[0] - b[0], dy = a[1] - b[1], l = Math.hypot(dx, dy) || 1; this.nrm.push([dy / l, -dx / l]); var vx = cen[0] - outer[i][0], vy = cen[1] - outer[i][1], vl = Math.hypot(vx, vy) || 1; this.inner.push([outer[i][0] + vx / vl * s * 0.075, outer[i][1] + vy / vl * s * 0.075]); }
+      this.vaultN = Math.round(this.N * vault.length / (vault.length + face.length));   // 두개관 구간(진동 표시)
+      this.facePoly = resample(face.concat([[-0.70, 0.06], [-0.30, 0.26], [0.10, 0.36], [0.34, 0.42], [0.44, 0.50]]).map(T), 70);
+      this.mand = resample([[0.30, 0.44], [0.37, 0.60], [0.35, 0.82], [0.12, 0.96], [-0.30, 1.00], [-0.54, 0.92], [-0.60, 0.78], [-0.56, 0.70], [-0.20, 0.70], [0.08, 0.60], [0.20, 0.50], [0.26, 0.40]].map(T), 60);
+      this.orbit = T([-0.57, -0.12]); this.orbitR = [0.17 * s, 0.15 * s];
+      this.zyg = resample([[-0.64, 0.14], [-0.30, 0.08], [0.30, 0.12], [0.34, 0.20], [-0.28, 0.18], [-0.62, 0.24]].map(T), 40);
+      this.ear = T([0.40, 0.30]);
+      this.teethU = []; this.teethL = []; for (var k = 0; k < 6; k++) { this.teethU.push(T([-0.62 + k * 0.085, 0.58 + k * 0.012])); this.teethL.push(T([-0.60 + k * 0.085, 0.70 + k * 0.006])); }
+      this.brain = resample([[-0.66, -0.10], [-0.72, -0.34], [-0.66, -0.56], [-0.50, -0.72], [-0.26, -0.84], [0.04, -0.88], [0.32, -0.84], [0.56, -0.72], [0.72, -0.52], [0.80, -0.28], [0.78, -0.02], [0.68, 0.16], [0.50, 0.24], [0.30, 0.32], [0.06, 0.36], [-0.20, 0.32], [-0.44, 0.20], [-0.60, 0.06]].map(T), 80);
+      this.brainC = T([0.06, -0.26]);
+      var seed = 7, rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+      this.sulci = []; for (i = 0; i < 12; i++) { var x0 = -0.55 + rnd() * 1.2, y0 = -0.75 + rnd() * 0.95, ang = rnd() * Math.PI, ln = 0.18 + rnd() * 0.2, pts = []; for (k = 0; k <= 6; k++) { var tt = k / 6; pts.push(T([x0 + Math.cos(ang) * ln * tt + Math.sin(tt * 9 + i) * 0.03, y0 + Math.sin(ang) * ln * tt + Math.cos(tt * 7 + i) * 0.03])); } this.sulci.push(pts); }
+      this.fissure = [T([-0.50, -0.02]), T([-0.05, -0.12]), T([0.40, -0.26])];
+      this.cereb = T([0.52, 0.36]); this.stem = [T([0.30, 0.42]), T([0.38, 0.64])];
+      this.nodes = []; var rings = MOBILE ? 5 : 8;
+      for (var r = 1; r <= rings; r++) { var q = r / (rings + 0.6), step = MOBILE ? 8 : 5; for (i = 0; i < this.brain.length; i += step) { var p = this.brain[i]; this.nodes.push({ x: this.brainC[0] + (p[0] - this.brainC[0]) * q, y: this.brainC[1] + (p[1] - this.brainC[1]) * q }); } }
+      this.act = [T([0.47, 0.60]), T([0.06, -1.0])]; this.L = s * 1.1;
     },
     field: function (x, y, t) { var u = 0; for (var i = 0; i < 2; i++) { var d = Math.hypot(x - this.act[i][0], y - this.act[i][1]); u += Math.cos(d / 24 - t * 6.5) * Math.exp(-d / this.L); } return u * 0.55; },
     draw: function (dt, t) {
-      var s = this.s, N = this.N, o = this.outline, nr = this.nrm;
+      var s = this.s, N = this.N, o = this.vault, nr = this.nrm, inn = this.inner, VN = this.vaultN;
+      // 두개관(두꺼운 뼈 판): 바깥 윤곽 + 안쪽 윤곽 사이 채움, 진동 변위 반영
+      var disp = new Array(N); for (var i = 0; i < N; i++) disp[i] = i < VN ? this.field(o[i][0], o[i][1], t) * 9 : 0;
+      var g = ctx.createLinearGradient(0, this.c.y - s, 0, this.c.y + s); g.addColorStop(0, 'rgba(238,230,212,0.85)'); g.addColorStop(1, 'rgba(180,166,138,0.85)');
       ctx.beginPath();
-      for (var i = 0; i <= N; i++) { var k = i % N, u = this.field(o[k][0], o[k][1], t), x = o[k][0] + nr[k][0] * u * 9, y = o[k][1] + nr[k][1] * u * 9; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-      ctx.closePath(); ctx.fillStyle = white(0.05); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = white(0.8); ctx.stroke();
-      ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.55);
-      ctx.beginPath(); ctx.ellipse(this.orbit[0], this.orbit[1], this.orbitR[0], this.orbitR[1], -0.15, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(this.zyg[0][0], this.zyg[0][1]); ctx.quadraticCurveTo(this.zyg[1][0], this.zyg[1][1], this.zyg[2][0], this.zyg[2][1]); ctx.stroke();
-      ctx.beginPath(); ctx.arc(this.ear[0], this.ear[1], s * 0.045, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(this.jawline[0][0], this.jawline[0][1]); ctx.quadraticCurveTo(this.jawline[1][0], this.jawline[1][1], this.jawline[2][0], this.jawline[2][1]); ctx.stroke();
-      ctx.lineWidth = 1; for (i = 0; i < this.teeth.length; i++) { var th = this.teeth[i]; ctx.strokeRect(th[0] - s * 0.025, th[1] - s * 0.04, s * 0.05, s * 0.08); }
+      for (i = 0; i <= VN; i++) { var k = i % N, x = o[k][0] + nr[k][0] * disp[k], y = o[k][1] + nr[k][1] * disp[k]; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+      for (i = VN; i >= 0; i--) { k = i % N; ctx.lineTo(inn[k][0] + nr[k][0] * disp[k] * 0.8, inn[k][1] + nr[k][1] * disp[k] * 0.8); }
+      ctx.closePath(); ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 1.6; ctx.strokeStyle = 'rgba(110,96,70,0.9)'; ctx.stroke();
+      // 안면골(상악·측두저) — 두개강은 비워 둠
+      tracePath(this.facePoly, true); ctx.fillStyle = 'rgba(214,202,178,0.88)'; ctx.fill(); ctx.stroke();
+      // 안와·비강·광대활·귓구멍
+      ctx.beginPath(); ctx.ellipse(this.orbit[0], this.orbit[1], this.orbitR[0], this.orbitR[1], -0.15, 0, Math.PI * 2); ctx.fillStyle = 'rgba(40,36,30,0.85)'; ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(110,96,70,0.9)'; ctx.stroke();
+      tracePath(this.zyg, true); ctx.fillStyle = 'rgba(232,222,202,0.95)'; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(this.ear[0], this.ear[1], s * 0.045, 0, Math.PI * 2); ctx.fillStyle = 'rgba(40,36,30,0.9)'; ctx.fill(); ctx.stroke();
+      // 하악골 + 치아
+      tracePath(this.mand, true); ctx.fillStyle = 'rgba(226,216,194,0.95)'; ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = 'rgba(250,247,238,0.95)'; ctx.lineWidth = 0.8;
+      for (i = 0; i < 6; i++) { var tu = this.teethU[i], tl = this.teethL[i]; ctx.fillRect(tu[0] - s * 0.032, tu[1] - s * 0.045, s * 0.064, s * 0.06); ctx.strokeRect(tu[0] - s * 0.032, tu[1] - s * 0.045, s * 0.064, s * 0.06); ctx.fillRect(tl[0] - s * 0.032, tl[1] - s * 0.012, s * 0.064, s * 0.06); ctx.strokeRect(tl[0] - s * 0.032, tl[1] - s * 0.012, s * 0.064, s * 0.06); }
+      // 뇌(대뇌 주름·외측열·소뇌·뇌간) — 진동장에 따라 밝기
       var bf = Math.abs(this.field(this.brainC[0], this.brainC[1], t));
-      tracePath(this.brain, true); ctx.fillStyle = amber(0.06 + 0.08 * bf); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.55); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(this.cereb[0], this.cereb[1], s * 0.2, s * 0.13, 0.25, 0, Math.PI * 2); ctx.fillStyle = amber(0.05); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(this.stem[0][0], this.stem[0][1]); ctx.lineTo(this.stem[1][0], this.stem[1][1]); ctx.lineWidth = 5; ctx.strokeStyle = amber(0.35); ctx.stroke(); ctx.lineWidth = 1;
-      ctx.strokeStyle = amber(0.35); for (i = 0; i < this.sulci.length; i++) { var sc = this.sulci[i]; ctx.beginPath(); ctx.moveTo(sc[0][0], sc[0][1]); ctx.quadraticCurveTo(sc[1][0], sc[1][1], sc[2][0], sc[2][1]); ctx.stroke(); }
-      for (k = 0; k < this.inner.length; k++) { var p = this.inner[k], v = this.field(p.x, p.y, t), m = Math.abs(v); ctx.fillStyle = m > 0.3 ? amber(0.35 + 0.65 * m) : white(0.18 + 0.4 * m); ctx.beginPath(); ctx.arc(p.x + v * 3, p.y + v * 3, 1.5 + 3.2 * m, 0, Math.PI * 2); ctx.fill(); }
-      for (var j = 0; j < N; j += 2) { var e = Math.abs(this.field(o[j][0], o[j][1], t)); ctx.fillStyle = amber(0.25 + 0.75 * e); ctx.beginPath(); ctx.arc(o[j][0], o[j][1], 1.6 + 3.2 * e, 0, Math.PI * 2); ctx.fill(); }
+      tracePath(this.brain, true); ctx.fillStyle = 'rgba(232,184,32,' + (0.16 + 0.12 * bf) + ')'; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.8); ctx.stroke();
+      ctx.save(); tracePath(this.brain, true); ctx.clip(); ctx.strokeStyle = amber(0.42); ctx.lineWidth = 1.2;
+      for (i = 0; i < this.sulci.length; i++) { var sp = this.sulci[i]; ctx.beginPath(); for (k = 0; k < sp.length; k++) { if (k) ctx.lineTo(sp[k][0], sp[k][1]); else ctx.moveTo(sp[k][0], sp[k][1]); } ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(this.fissure[0][0], this.fissure[0][1]); ctx.quadraticCurveTo(this.fissure[1][0], this.fissure[1][1], this.fissure[2][0], this.fissure[2][1]); ctx.lineWidth = 2; ctx.strokeStyle = amber(0.6); ctx.stroke(); ctx.restore();
+      ctx.beginPath(); ctx.ellipse(this.cereb[0], this.cereb[1], s * 0.21, s * 0.14, 0.25, 0, Math.PI * 2); ctx.fillStyle = amber(0.10); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.65); ctx.stroke();
+      ctx.lineWidth = 1; ctx.strokeStyle = amber(0.4); for (i = -2; i <= 2; i++) { ctx.beginPath(); ctx.ellipse(this.cereb[0], this.cereb[1], s * 0.19, s * 0.12, 0.25, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(this.cereb[0] - s * 0.17, this.cereb[1] + i * s * 0.045); ctx.lineTo(this.cereb[0] + s * 0.17, this.cereb[1] + i * s * 0.045); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(this.stem[0][0], this.stem[0][1]); ctx.lineTo(this.stem[1][0], this.stem[1][1]); ctx.lineWidth = 6; ctx.strokeStyle = amber(0.5); ctx.stroke();
+      // 뇌 내부 응답 노드(뇌 윤곽을 축소한 등고선 배치)
+      for (k = 0; k < this.nodes.length; k++) { var p = this.nodes[k], v = this.field(p.x, p.y, t), m = Math.abs(v); ctx.fillStyle = m > 0.3 ? amber(0.4 + 0.6 * m) : white(0.2 + 0.4 * m); ctx.beginPath(); ctx.arc(p.x + v * 3, p.y + v * 3, 1.4 + 3.2 * m, 0, Math.PI * 2); ctx.fill(); }
+      // 두개관 위 진동 에너지 점
+      for (var j = 0; j < VN; j += 2) { var e = Math.abs(this.field(o[j][0], o[j][1], t)); ctx.fillStyle = amber(0.3 + 0.7 * e); ctx.beginPath(); ctx.arc(o[j][0] + nr[j][0] * disp[j], o[j][1] + nr[j][1] * disp[j], 1.5 + 3 * e, 0, Math.PI * 2); ctx.fill(); }
+      // 진동자 + 파면 링
       var per = 2 * Math.PI / 6.5, ph = (t % per) / per;
-      for (var q = 0; q < 2; q++) {
-        var A = this.act[q];
-        ctx.fillStyle = amber(1); ctx.beginPath(); ctx.arc(A[0], A[1], 6, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = white(0.9); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(A[0], A[1], 10, 0, Math.PI * 2); ctx.stroke();
-        for (var r = 0; r < 4; r++) { var rr = (ph + r / 4) % 1; ctx.beginPath(); ctx.arc(A[0], A[1], 12 + rr * this.L * 1.2, 0, Math.PI * 2); ctx.strokeStyle = amber(0.45 * (1 - rr)); ctx.lineWidth = 1; ctx.stroke(); }
-      }
-      label('40 Hz tVAS', this.act[0][0] + 16, this.act[0][1] + 26, 'left', 0.7); label('40 Hz tVAS', this.act[1][0], this.act[1][1] - 18, 'center', 0.7);
-      label(L('두개골', 'skull'), this.c.x - s * 0.95, this.c.y - s * 0.62, 'right', 0.6);
-      label(L('뇌 · 뇌척수액', 'brain · CSF'), this.brainC[0], this.brainC[1] + this.brainR[1] * 0.78, 'center', 0.7);
-      label(L('진동 전파', 'vibration path'), this.c.x + s * 1.02, this.c.y + s * 0.05, 'left', 0.55);
+      for (var q = 0; q < 2; q++) { var A = this.act[q];
+        ctx.fillStyle = amber(1); ctx.beginPath(); ctx.arc(A[0], A[1], 6, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = white(0.9); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(A[0], A[1], 10, 0, Math.PI * 2); ctx.stroke();
+        for (var r = 0; r < 4; r++) { var rr = (ph + r / 4) % 1; ctx.beginPath(); ctx.arc(A[0], A[1], 12 + rr * this.L * 1.2, 0, Math.PI * 2); ctx.strokeStyle = amber(0.45 * (1 - rr)); ctx.lineWidth = 1; ctx.stroke(); } }
+      label('40 Hz tVAS ' + L('(유양돌기)', '(mastoid)'), this.act[0][0] + 16, this.act[0][1] + 26, 'left', 0.75);
+      label('40 Hz tVAS ' + L('(정수리)', '(vertex)'), this.act[1][0], this.act[1][1] - 18, 'center', 0.75);
+      label(L('두개골', 'skull'), this.c.x - s * 0.98, this.c.y - s * 0.66, 'right', 0.65);
+      label(L('뇌 · 뇌척수액 응답', 'brain · CSF response'), this.brainC[0], this.brainC[1] + s * 0.02, 'center', 0.8);
+      label(L('진동 전파 경로', 'vibration path'), this.c.x + s * 1.02, this.c.y + s * 0.02, 'left', 0.55);
     }
   };
 
@@ -275,9 +337,9 @@
     init: function () {
       var S = Math.min(W, HV);
       this.u = S * (MOBILE ? 0.20 : 0.15);                       // 하퇴(정강이) 길이 단위
-      this.hip = MOBILE ? { x: W * 0.45, y: HV * 0.22 } : { x: W * 0.62, y: HV * (COMPACT ? 0.36 : 0.26) };
+      this.hip = MOBILE ? { x: W * 0.45, y: HV * 0.22 } : { x: W * 0.50, y: HV * (COMPACT ? 0.36 : 0.30) };
       this.ground = this.hip.y + this.u * 2.45; this.period = 1.25;
-      this.plot = MOBILE ? { x: W * 0.08, y: HV * 0.80, w: W * 0.84, h: HV * 0.12 } : { x: W * 0.06, y: HV * 0.50, w: W * 0.28, h: HV * 0.16 };
+      this.plot = MOBILE ? { x: W * 0.08, y: HV * 0.80, w: W * 0.84, h: HV * 0.12 } : COMPACT ? { x: W * 0.06, y: HV * 0.55, w: W * 0.28, h: HV * 0.22 } : { x: W * 0.63, y: HV * 0.73, w: W * 0.28, h: HV * 0.10 };
     },
     // 보행 주기 φ(0=뒤꿈치 닿음)에 따른 관절각(rad). +: 굽힘/발바닥굽힘
     joints: function (ph) {
@@ -346,43 +408,39 @@
   var vestibular = {
     ko: '전정계 · 감각 불일치 모델링 — 멀미 연구', en: 'Vestibular system · sensory-conflict model — motion sickness',
     init: function () {
-      var S = Math.min(W, HV), s = S * (MOBILE ? 0.30 : 0.26);
-      this.s = s; this.c = MOBILE ? { x: W * 0.5, y: HV * 0.48 } : { x: W * 0.62, y: HV * 0.5 };
-      this.head = resample([[-0.55, -0.85], [-0.05, -1.0], [0.45, -0.85], [0.7, -0.4], [0.62, 0.15], [0.4, 0.55], [0.15, 0.85], [-0.2, 0.95], [-0.5, 0.75], [-0.72, 0.35], [-0.78, -0.2], [-0.72, -0.6]], MOBILE ? 60 : 100);
-      this.win = MOBILE ? { x: W * 0.06, y: HV * 0.10, w: W * 0.88, h: HV * 0.28 } : { x: W * 0.06, y: HV * 0.20, w: W * 0.30, h: HV * 0.26 };
+      var S = Math.min(W, HV), s = S * (MOBILE ? 0.30 : 0.27);
+      this.s = s; this.c = MOBILE ? { x: W * 0.5, y: HV * 0.48 } : { x: W * 0.47, y: HV * 0.52 };
+      // 실제 머리 옆모습(코·입·턱·귀·목)
+      this.head = resample([[-0.20, -1.0], [0.25, -0.98], [0.60, -0.80], [0.78, -0.45], [0.80, -0.05], [0.72, 0.35], [0.55, 0.62], [0.38, 0.82], [0.30, 1.05], [-0.10, 1.05], [-0.38, 0.92], [-0.50, 0.76], [-0.44, 0.62], [-0.52, 0.52], [-0.46, 0.42], [-0.62, 0.28], [-0.66, 0.18], [-0.52, 0.02], [-0.56, -0.20], [-0.62, -0.45], [-0.52, -0.75], [-0.25, -0.95]], MOBILE ? 60 : 110);
+      this.win = MOBILE ? { x: W * 0.06, y: HV * 0.10, w: W * 0.88, h: HV * 0.28 } : COMPACT ? { x: W * 0.04, y: HV * 0.18, w: W * 0.30, h: HV * 0.30 } : { x: W * 0.63, y: HV * 0.72, w: W * 0.28, h: HV * 0.11 };
+      this.gauge = MOBILE ? { x: W * 0.08, y: HV * 0.42, w: W * 0.84 } : COMPACT ? { x: W * 0.04, y: HV * 0.62, w: W * 0.30 } : { x: W * 0.07, y: HV * 0.80, w: W * 0.30 };
     },
     draw: function (dt, t) {
-      var s = this.s, c = this.c, roll = 0.16 * Math.sin(t * 1.1), vis = 0.16 * Math.sin(t * 1.1 - 1.4);   // 머리(전정) vs 시각(창밖) 위상차 = 감각 불일치
-      // 창밖 풍경(시각 입력): 기울어지는 수평선
+      var s = this.s, c = this.c, roll = 0.16 * Math.sin(t * 1.1), vis = 0.16 * Math.sin(t * 1.1 - 1.4);
       var w = this.win; ctx.save(); ctx.beginPath(); ctx.rect(w.x, w.y, w.w, w.h); ctx.clip();
       ctx.translate(w.x + w.w / 2, w.y + w.h * 0.55); ctx.rotate(vis);
-      ctx.fillStyle = 'rgba(232,184,32,0.10)'; ctx.fillRect(-w.w, 0, 2 * w.w, w.h); ctx.strokeStyle = white(0.7); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-w.w, 0); ctx.lineTo(w.w, 0); ctx.stroke();
-      ctx.strokeStyle = white(0.18); ctx.lineWidth = 1; for (var i = -6; i <= 6; i++) { ctx.beginPath(); ctx.moveTo(i * w.w * 0.12 - (t * 30 % (w.w * 0.12)), 0); ctx.lineTo(i * w.w * 0.35 - (t * 30 % (w.w * 0.12)) * 3, w.h); ctx.stroke(); }
-      ctx.restore(); ctx.strokeStyle = white(0.45); ctx.lineWidth = 1.5; ctx.strokeRect(w.x, w.y, w.w, w.h);
-      label(L('시각 입력 (창밖)', 'visual input (window)'), w.x + 8, w.y - 8, 'left', 0.55);
-      // 머리(기울어짐) + 내이
+      ctx.fillStyle = 'rgba(232,184,32,0.12)'; ctx.fillRect(-w.w, 0, 2 * w.w, w.h); ctx.strokeStyle = white(0.75); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-w.w, 0); ctx.lineTo(w.w, 0); ctx.stroke();
+      ctx.strokeStyle = white(0.2); ctx.lineWidth = 1; for (var i = -6; i <= 6; i++) { ctx.beginPath(); ctx.moveTo(i * w.w * 0.12 - (t * 30 % (w.w * 0.12)), 0); ctx.lineTo(i * w.w * 0.35 - (t * 30 % (w.w * 0.12)) * 3, w.h); ctx.stroke(); }
+      ctx.restore(); ctx.strokeStyle = white(0.5); ctx.lineWidth = 1.5; ctx.strokeRect(w.x, w.y, w.w, w.h);
+      label(L('시각 입력 (창밖 수평선)', 'visual input (window)'), w.x + 6, w.y - 8, 'left', 0.6);
       ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(roll);
-      ctx.beginPath(); for (i = 0; i < this.head.length; i++) { var p = this.head[i]; if (i) ctx.lineTo(p[0] * s, p[1] * s); else ctx.moveTo(p[0] * s, p[1] * s); } ctx.closePath(); ctx.fillStyle = white(0.05); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = white(0.75); ctx.stroke();
-      ctx.beginPath(); ctx.arc(-0.42 * s, -0.25 * s, 0.05 * s, 0, Math.PI * 2); ctx.strokeStyle = white(0.5); ctx.lineWidth = 1.5; ctx.stroke();   // 눈
-      var ex = 0.30 * s, ey = -0.05 * s;                                                                                                        // 내이 위치
-      var flow = -roll * 4;                                                                                                                       // 내림프 흐름(관성)
-      var canals = [{ rx: 0.13, ry: 0.19, rot: -0.4, dx: 0.02, dy: -0.16 }, { rx: 0.12, ry: 0.17, rot: 0.55, dx: 0.14, dy: -0.12 }, { rx: 0.17, ry: 0.07, rot: 0.1, dx: 0.10, dy: 0.02 }];
-      for (i = 0; i < 3; i++) {
-        var cn = canals[i]; ctx.beginPath(); ctx.ellipse(ex + cn.dx * s, ey + cn.dy * s, cn.rx * s, cn.ry * s, cn.rot, 0, Math.PI * 2); ctx.lineWidth = 6; ctx.strokeStyle = amber(0.18); ctx.stroke(); ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.9); ctx.stroke();
-        for (var k = 0; k < 6; k++) { var a = k / 6 * Math.PI * 2 + t * 1.5 * flow; var px = ex + cn.dx * s + Math.cos(cn.rot) * cn.rx * s * Math.cos(a) - Math.sin(cn.rot) * cn.ry * s * Math.sin(a), py = ey + cn.dy * s + Math.sin(cn.rot) * cn.rx * s * Math.cos(a) + Math.cos(cn.rot) * cn.ry * s * Math.sin(a); ctx.fillStyle = white(0.85); ctx.beginPath(); ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill(); }
-      }
-      // 달팽이관(작게)
-      ctx.beginPath(); for (i = 0; i <= 60; i++) { var u = i / 60, th = u * 2.2 * Math.PI * 2, r = 0.10 * s * (1 - 0.8 * u); var qx = ex + 0.16 * s + r * Math.cos(th), qy = ey + 0.16 * s + r * Math.sin(th); if (i) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy); } ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.6); ctx.stroke();
+      ctx.beginPath(); for (i = 0; i < this.head.length; i++) { var p = this.head[i]; if (i) ctx.lineTo(p[0] * s, p[1] * s); else ctx.moveTo(p[0] * s, p[1] * s); } ctx.closePath();
+      var hg = ctx.createLinearGradient(-s, 0, s, 0); hg.addColorStop(0, 'rgba(255,255,255,0.10)'); hg.addColorStop(1, 'rgba(255,255,255,0.03)'); ctx.fillStyle = hg; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = white(0.8); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0.30 * s, 0.05 * s, 0.07 * s, 0.12 * s, 0.15, 0, Math.PI * 2); ctx.lineWidth = 1.5; ctx.strokeStyle = white(0.55); ctx.stroke();   // 귀
+      ctx.beginPath(); ctx.ellipse(-0.40 * s, -0.22 * s, 0.06 * s, 0.035 * s, 0, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(-0.40 * s, -0.22 * s, 0.018 * s, 0, Math.PI * 2); ctx.fillStyle = white(0.7); ctx.fill(); // 눈
+      var ex = 0.36 * s, ey = 0.02 * s, flow = -roll * 4;
+      var canals = [{ rx: 0.12, ry: 0.17, rot: -0.4, dx: 0.02, dy: -0.15 }, { rx: 0.11, ry: 0.15, rot: 0.55, dx: 0.13, dy: -0.11 }, { rx: 0.15, ry: 0.06, rot: 0.1, dx: 0.09, dy: 0.02 }];
+      for (i = 0; i < 3; i++) { var cn = canals[i]; ctx.beginPath(); ctx.ellipse(ex + cn.dx * s, ey + cn.dy * s, cn.rx * s, cn.ry * s, cn.rot, 0, Math.PI * 2); ctx.lineWidth = 6; ctx.strokeStyle = amber(0.2); ctx.stroke(); ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.95); ctx.stroke();
+        for (var k = 0; k < 6; k++) { var a = k / 6 * Math.PI * 2 + t * 1.5 * flow, px = ex + cn.dx * s + Math.cos(cn.rot) * cn.rx * s * Math.cos(a) - Math.sin(cn.rot) * cn.ry * s * Math.sin(a), py = ey + cn.dy * s + Math.sin(cn.rot) * cn.rx * s * Math.cos(a) + Math.cos(cn.rot) * cn.ry * s * Math.sin(a); ctx.fillStyle = white(0.9); ctx.beginPath(); ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill(); } }
+      ctx.beginPath(); for (i = 0; i <= 60; i++) { var u = i / 60, th = u * 2.2 * Math.PI * 2, r = 0.09 * s * (1 - 0.8 * u), qx = ex - 0.02 * s + r * Math.cos(th), qy = ey + 0.17 * s + r * Math.sin(th); if (i) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy); } ctx.lineWidth = 1.5; ctx.strokeStyle = amber(0.7); ctx.stroke();
       ctx.restore();
-      // 머리 기울기 표시(수직 기준선 vs 머리 축)
-      ctx.setLineDash([3, 5]); ctx.strokeStyle = white(0.3); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c.x, c.y - s * 1.25); ctx.lineTo(c.x, c.y + s * 1.15); ctx.stroke(); ctx.setLineDash([]);
+      ctx.setLineDash([3, 5]); ctx.strokeStyle = white(0.3); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c.x, c.y - s * 1.25); ctx.lineTo(c.x, c.y + s * 1.2); ctx.stroke(); ctx.setLineDash([]);
       ctx.strokeStyle = amber(0.8); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x - Math.sin(roll) * s * 1.2, c.y - Math.cos(roll) * s * 1.2); ctx.stroke();
-      label(L('전정 입력 (머리 기울기 ', 'vestibular input (head tilt ') + Math.round(roll * 180 / Math.PI) + '°)', c.x, c.y + s * 1.3, 'center', 0.6);
-      label(L('반고리관 · 내림프', 'semicircular canals · endolymph'), c.x + s * 0.75, c.y - s * 0.55, 'left', 0.6);
-      // 불일치 게이지
-      var conf = Math.abs(roll - vis) / 0.32, gx = MOBILE ? W * 0.08 : this.win.x, gy = MOBILE ? HV * 0.42 : this.win.y + this.win.h + 36, gw = MOBILE ? W * 0.84 : this.win.w;
-      ctx.fillStyle = white(0.12); ctx.fillRect(gx, gy, gw, 6); ctx.fillStyle = heat(conf, 0.95); ctx.fillRect(gx, gy, gw * clamp01(conf), 6);
-      label(L('감각 불일치 → 멀미 유발도', 'sensory conflict → sickness incidence'), gx, gy - 8, 'left', 0.6);
+      label(L('전정 입력 (머리 기울기 ', 'vestibular input (head tilt ') + Math.round(roll * 180 / Math.PI) + '°)', c.x, c.y + s * 1.32, 'center', 0.65);
+      label(L('내이: 반고리관 · 내림프 흐름', 'inner ear: canals · endolymph'), c.x + s * 0.85, c.y - s * 0.45, 'left', 0.65);
+      var conf = Math.abs(roll - vis) / 0.32, gg = this.gauge;
+      ctx.fillStyle = white(0.12); ctx.fillRect(gg.x, gg.y, gg.w, 6); ctx.fillStyle = heat(conf, 0.95); ctx.fillRect(gg.x, gg.y, gg.w * clamp01(conf), 6);
+      label(L('감각 불일치 → 멀미 유발도', 'sensory conflict → sickness'), gg.x, gg.y - 8, 'left', 0.65);
     }
   };
 
@@ -410,44 +468,61 @@
     return lines;
   }
   var papers = {
-    full: true, ko: '주요 논문', en: 'Selected publications',
+    ko: '주요 논문', en: 'Selected publications', each: 10, fade: 1.3,
     init: function () {
       if (!this.items) {
-        this.items = [];
-        var self = this;
+        this.items = []; var self = this;
         document.querySelectorAll('.pub-item').forEach(function (el) {
-          if (self.items.length >= 14) return;
-          var img = el.querySelector('.pub-thumb img'), h3 = el.querySelector('h3'), j = el.querySelector('.pub-journal'), y = el.getAttribute('data-year'), im = null;
+          if (self.items.length >= 12) return;
+          var img = el.querySelector('.pub-thumb img'), h3 = el.querySelector('h3'), j = el.querySelector('.pub-journal'), v = el.querySelector('.pub-vol'), au = el.querySelector('.pub-authors'), im = null;
           if (img) { im = new Image(); im.decoding = 'async'; im.src = img.getAttribute('src'); }
-          self.items.push({ title: h3 ? h3.textContent.trim() : '', journal: (j ? j.textContent.trim() : '') + (y ? ' · ' + y : ''), im: im });
+          self.items.push({ title: h3 ? h3.textContent.trim() : '', journal: j ? j.textContent.trim() : '', vol: v ? v.textContent.trim() : '', authors: au ? au.textContent.trim() : '', im: im });
         });
       }
-      var n = this.items.length, S = Math.min(W, HV); this.cards = [];
-      for (var i = 0; i < n; i++) { var d = 0.45 + 0.55 * ((i * 0.37) % 1); this.cards.push({ it: this.items[i], x: 0.06 + 0.88 * ((i * 0.618) % 1), y: (i / n + 0.1) % 1, d: d, w: S * (MOBILE ? 0.62 : 0.36) * d, rot: (((i * 0.53) % 1) - 0.5) * 0.26, v: 0.010 + 0.018 * d }); }
-      this.cards.sort(function (a, b) { return a.d - b.d; });
+      var S = Math.min(W, HV);
+      this.pw = MOBILE ? W * 0.9 : Math.min(W * 0.52, HV * 0.95); this.px = MOBILE ? W * 0.05 : W * 0.5 - this.pw / 2;
     },
-    card: function (it, w, h, d) {
-      var pad = w * 0.07, fs = Math.max(9, w * 0.052), x = -w / 2 + pad, y = -h / 2 + pad + fs;
-      ctx.fillStyle = 'rgba(238,235,228,' + (0.5 + 0.45 * d) + ')'; ctx.fillRect(-w / 2, -h / 2, w, h);
-      ctx.fillStyle = 'rgba(199,154,10,0.95)'; ctx.fillRect(-w / 2, -h / 2, w, 3);
-      ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(170,128,6,1)'; ctx.font = '600 ' + (fs * 0.8) + 'px Paperlogy, sans-serif'; ctx.fillText(it.journal, x, y); y += fs * 1.25;
-      ctx.fillStyle = '#1b1d22'; ctx.font = '700 ' + fs + 'px Paperlogy, sans-serif';
-      var lines = wrapText(it.title, w - 2 * pad, 3);
-      for (var k = 0; k < lines.length; k++) { ctx.fillText(lines[k], x, y); y += fs * 1.25; }
-      y += fs * 0.35;
-      var tw = w * 0.36, th = tw * 0.8;
-      if (it.im && it.im.complete && it.im.naturalWidth) { ctx.save(); ctx.beginPath(); ctx.rect(w / 2 - pad - tw, y, tw, th); ctx.clip(); drawCover(it.im, w / 2 - pad - tw, y, tw, th, 1, 0.5, 0.5); ctx.restore(); ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1; ctx.strokeRect(w / 2 - pad - tw, y, tw, th); }
-      var lw = w - 2 * pad - tw - pad * 0.7; ctx.fillStyle = 'rgba(30,32,38,0.30)';
-      for (var ly = y + 2; ly < h / 2 - pad; ly += fs * 0.78) { var full = ly > y + th ? w - 2 * pad : lw; ctx.fillRect(x, ly, full * (0.72 + 0.28 * Math.abs(Math.sin(ly * 7.3))), fs * 0.27); }
+    // 논문 한 페이지를 (0,0) 기준으로 그림 → 높이 반환
+    page: function (it, w, alpha) {
+      var pad = w * 0.075, fs = Math.max(11, w * 0.030), x = pad, y = pad + fs, ph = w * 1.42;
+      ctx.fillStyle = 'rgba(246,243,236,' + alpha + ')'; ctx.fillRect(0, 0, w, ph);
+      ctx.fillStyle = 'rgba(199,154,10,' + alpha + ')'; ctx.fillRect(0, 0, w, 4);
+      ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(150,112,4,' + alpha + ')'; ctx.font = '600 ' + (fs * 0.85) + 'px Paperlogy, sans-serif'; ctx.fillText(it.journal, x, y);
+      ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(90,90,90,' + alpha + ')'; ctx.font = '500 ' + (fs * 0.75) + 'px Paperlogy, sans-serif'; ctx.fillText(it.vol, w - pad, y); ctx.textAlign = 'left';
+      y += fs * 0.9; ctx.fillStyle = 'rgba(0,0,0,' + 0.15 * alpha + ')'; ctx.fillRect(x, y, w - 2 * pad, 1); y += fs * 1.9;
+      ctx.fillStyle = 'rgba(24,26,31,' + alpha + ')'; ctx.font = '700 ' + (fs * 1.55) + 'px Paperlogy, sans-serif';
+      var lines = wrapText(it.title, w - 2 * pad, 4); for (var k = 0; k < lines.length; k++) { ctx.fillText(lines[k], x, y); y += fs * 1.55 * 1.22; }
+      y += fs * 0.4; ctx.fillStyle = 'rgba(60,62,70,' + alpha + ')'; ctx.font = '500 ' + (fs * 0.95) + 'px Paperlogy, sans-serif';
+      lines = wrapText(it.authors, w - 2 * pad, 2); for (k = 0; k < lines.length; k++) { ctx.fillText(lines[k], x, y); y += fs * 1.35; }
+      y += fs * 0.5; ctx.fillStyle = 'rgba(0,0,0,' + 0.15 * alpha + ')'; ctx.fillRect(x, y, w - 2 * pad, 1); y += fs * 1.2;
+      // 초록 제목 + 본문 줄(두 단), 그림(썸네일) + 캡션
+      ctx.fillStyle = 'rgba(24,26,31,' + alpha + ')'; ctx.font = '700 ' + fs + 'px Paperlogy, sans-serif'; ctx.fillText('Abstract', x, y); y += fs * 0.9;
+      var colW = (w - 2 * pad - pad * 0.6) / 2, c2 = x + colW + pad * 0.6, lh = fs * 0.78, ly = y, seed = 3;
+      ctx.fillStyle = 'rgba(40,42,48,' + 0.30 * alpha + ')';
+      for (var n = 0; n < 9; n++) { ly += lh; ctx.fillRect(x, ly, (w - 2 * pad) * (0.86 + 0.14 * Math.abs(Math.sin(n * 2.3))), fs * 0.32); }
+      ly += lh * 1.6; var figY = ly, figH = colW * 0.72;
+      if (it.im && it.im.complete && it.im.naturalWidth) { ctx.save(); ctx.beginPath(); ctx.rect(x, figY, colW, figH); ctx.clip(); ctx.globalAlpha *= alpha; drawCover(it.im, x, figY, colW, figH, 1, 0.5, 0.5); ctx.restore(); }
+      else { ctx.fillStyle = 'rgba(0,0,0,' + 0.06 * alpha + ')'; ctx.fillRect(x, figY, colW, figH); }
+      ctx.strokeStyle = 'rgba(0,0,0,' + 0.2 * alpha + ')'; ctx.lineWidth = 1; ctx.strokeRect(x, figY, colW, figH);
+      ctx.fillStyle = 'rgba(60,62,70,' + alpha + ')'; ctx.font = '600 ' + (fs * 0.72) + 'px Paperlogy, sans-serif'; ctx.fillText('Fig. 1', x, figY + figH + fs);
+      ctx.fillStyle = 'rgba(40,42,48,' + 0.30 * alpha + ')';
+      for (n = 0; n < 3; n++) ctx.fillRect(x, figY + figH + fs * 1.4 + n * lh, colW * (0.9 - 0.2 * n), fs * 0.28);
+      var ry = figY; for (n = 0; n < 34 && ry < ph - pad * 1.5; n++) { ctx.fillRect(c2, ry, colW * (0.82 + 0.18 * Math.abs(Math.sin(n * 1.7 + 1))), fs * 0.32); ry += lh; }
+      ry = figY + figH + fs * 1.4 + 4 * lh; for (n = 0; n < 40 && ry < ph - pad * 1.5; n++) { ctx.fillRect(x, ry, colW * (0.82 + 0.18 * Math.abs(Math.sin(n * 1.9))), fs * 0.32); ry += lh; }
+      ctx.fillStyle = 'rgba(90,90,90,' + alpha + ')'; ctx.font = '500 ' + (fs * 0.7) + 'px Paperlogy, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('1', w / 2, ph - pad * 0.6); ctx.textAlign = 'left';
+      return ph;
+    },
+    one: function (it, k, alpha) {
+      var w = this.pw, ph = w * 1.42, top = COMPACT ? H * 0.42 : H * 0.14, travel = Math.max(0, ph + top - H * 0.55), y0 = top - travel * smooth(Math.min(1, k * 1.15));
+      ctx.save(); ctx.translate(this.px, y0); ctx.shadowColor = 'rgba(0,0,0,' + 0.6 * alpha + ')'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14; ctx.fillStyle = 'rgba(30,32,38,' + alpha + ')'; ctx.fillRect(0, 0, w, ph); ctx.shadowColor = 'transparent';
+      this.page(it, w, alpha); ctx.restore();
     },
     draw: function (dt, t) {
-      for (var i = 0; i < this.cards.length; i++) {
-        var c = this.cards[i], y = ((c.y - t * c.v) % 1 + 1) % 1, w = c.w, h = w * 1.3, cx = c.x * W, cy = y * (H + h * 1.4) - h * 0.7;
-        ctx.save(); ctx.translate(cx, cy); ctx.rotate(c.rot); ctx.globalAlpha *= 0.35 + 0.6 * c.d;
-        ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 26 * c.d; ctx.shadowOffsetY = 10; ctx.fillStyle = '#2a2d34'; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.shadowColor = 'transparent';
-        this.card(c.it, w, h, c.d); ctx.restore();
-      }
-      ctx.fillStyle = 'rgba(16,18,22,0.18)'; ctx.fillRect(0, 0, W, H);
+      var n = this.items.length; if (!n) return;
+      var cyc = this.each, i = Math.floor(t / cyc) % n, k = (t % cyc) / cyc, fr = this.fade / cyc;
+      this.one(this.items[i], k, k > 1 - fr ? 1 - smooth((k - (1 - fr)) / fr) : 1);
+      if (k > 1 - fr) this.one(this.items[(i + 1) % n], 0, smooth((k - (1 - fr)) / fr));
+      ctx.fillStyle = 'rgba(16,18,22,0.22)'; ctx.fillRect(0, 0, W, H);
     }
   };
 
