@@ -14,7 +14,7 @@
 
   var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var MOBILE = window.matchMedia('(max-width: 760px)').matches;
-  var DUR = 15, FADE = 3.0;
+  var DUR = 13, FADE = 1.6;
   var W = 0, H = 0, HV = 0, DPR = 1, ready = false; // HV: 실제 보이는 높이
   var FW = 0, WX = 0, COMPACT = false;               // 낮은 히어로(서브페이지)는 장면을 오른쪽 영역에 배치: W=유효 폭, WX=x 오프셋
 
@@ -100,11 +100,11 @@
     dim: 0.5, ko: '달팽이관 기저막 진행파 · 골전도 청각 연구', en: 'Basilar-membrane traveling wave · bone-conduction hearing',
     init: function () {
       var S = Math.min(W, HV);
-      this.turns = 2.6; this.M = MOBILE ? 90 : 170;
-      this.cam = new Cam(MOBILE ? W * 0.5 : W * 0.50, MOBILE ? HV * 0.55 : HV * 0.56, S * (MOBILE ? 0.24 : 0.21), 0.55, 1.05, 5.5);
+      this.turns = 2.25; this.M = MOBILE ? 90 : 170;
+      this.cam = new Cam(MOBILE ? W * 0.5 : W * 0.50, MOBILE ? HV * 0.55 : HV * 0.56, S * (MOBILE ? 0.24 : 0.22), 0.55, 0.62, 5.5);
       var self = this, cam = this.cam;
-      this.coil = function (u) { var th = u * self.turns * Math.PI * 2, r = 1.0 - 0.68 * u; return [r * Math.cos(th), r * Math.sin(th), 1.05 * u]; };
-      this.rad = function (u) { return 0.31 - 0.17 * u; };
+      this.coil = function (u) { var th = u * self.turns * Math.PI * 2, r = 1.0 - 0.66 * u; return [r * Math.cos(th), r * Math.sin(th), 1.15 * u]; };
+      this.rad = function (u) { return 0.30 - 0.16 * u; };
       // 정적 메시(달팽이관 튜브 + 전정 + 반고리관) → 오프스크린 2장(뒷면/앞면)
       var quads = [], path = [], radii = [], n = MOBILE ? 150 : 260;
       for (var i = 0; i <= n; i++) { var u = i / n; path.push(this.coil(u)); radii.push(this.rad(u)); }
@@ -132,7 +132,7 @@
       this.back = offscreen(); this.front = offscreen();
       var bx = this.back.x, fx = this.front.x;
       withCtx(bx, function () { quads.forEach(function (q) { if (q.glass && q.front) return; fillQuad(q.p, bone(q.s * (q.glass ? 0.55 : 1), q.glass ? 0.9 : 0.96), q.glass ? null : 'rgba(0,0,0,0.12)'); }); });
-      withCtx(fx, function () { quads.forEach(function (q) { if (!(q.glass && q.front)) return; fillQuad(q.p, bone(q.s, 0.14 + 0.22 * q.s), null); }); });
+      withCtx(fx, function () { quads.forEach(function (q) { if (!(q.glass && q.front)) return; fillQuad(q.p, bone(q.s, 0.08 + 0.14 * q.s), null); }); });
       // 라벨 위치
       this.pBase = cam.proj(this.coil(0)); this.pApex = cam.proj([ap[0], ap[1], ap[2] + 0.2]); this.pVest = cam.proj([vc[0], vc[1], vc[2] + 0.35]); this.pCan = cam.proj([1.62, 0.55, 1.15]);
       var b0 = this.coil(0), b1 = this.coil(0.004); this.baseDir = norm3([b1[0] - b0[0], b1[1] - b0[1], b1[2] - b0[2]]);
@@ -141,21 +141,28 @@
     },
     wave: function (u, t, up) {
       var env = u <= up ? Math.exp(-Math.pow((u - up) / 0.30, 2)) : Math.exp(-Math.pow((u - up) / 0.09, 2));
-      return env * Math.sin(2 * Math.PI * (u * 1.2 + u * u * 3.2) - t * 1.5);
+      return env * Math.sin(2 * Math.PI * (u * 0.9 + u * u * 2.4) - t * 1.5);
     },
     draw: function (dt, t) {
       var up = 0.22 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.09)), cam = this.cam, M = this.M, S = Math.min(W, HV);
       ctx.drawImage(this.back.c, 0, 0, W, H);
       // 기저막 리본(튜브 내부, 방사 방향으로 걸쳐진 막) — 진행파 변위를 z로
-      var quads = [], SL = 4, prev = null;
+      var quads = [], SL = 4, prev = null, restI = [], restO = [];
       for (var i = 0; i <= M; i++) {
         var u = i / M, c = this.coil(u), th = u * this.turns * Math.PI * 2, er = [Math.cos(th), Math.sin(th), 0], a = this.rad(u) * 0.86, h = this.wave(u, t, up), row = [];
-        for (var j = 0; j <= SL; j++) { var sv = -1 + 2 * j / SL, z = h * a * 1.15 * (1 - sv * sv); var p = cam.proj([c[0] + er[0] * a * sv, c[1] + er[1] * a * sv, c[2] + z]); row.push(p); }
-        if (prev) for (j = 0; j < SL; j++) quads.push({ p: [prev[j], prev[j + 1], row[j + 1], row[j]], depth: (prev[j].depth + row[j + 1].depth) / 2, h: h });
+        for (var j = 0; j <= SL; j++) { var sv = -1 + 2 * j / SL, z = h * a * 1.7 * (1 - sv * sv); var p = cam.proj([c[0] + er[0] * a * sv, c[1] + er[1] * a * sv, c[2] + z]); row.push(p); }
+        restI.push(cam.proj([c[0] - er[0] * a, c[1] - er[1] * a, c[2]])); restO.push(cam.proj([c[0] + er[0] * a, c[1] + er[1] * a, c[2]]));
+        if (prev) for (j = 0; j < SL; j++) quads.push({ p: [prev[j], prev[j + 1], row[j + 1], row[j]], depth: (prev[j].depth + row[j + 1].depth) / 2, h: h, edge: j === 0 || j === SL - 1 });
         prev = row;
       }
+      // 정지 위치(변위 0) 윤곽 — 막이 위아래로 얼마나 움직였는지 기준선
+      ctx.setLineDash([3, 4]); ctx.lineWidth = 1; ctx.strokeStyle = white(0.30);
+      ctx.beginPath(); for (i = 0; i <= M; i++) { if (i) ctx.lineTo(restI[i].x, restI[i].y); else ctx.moveTo(restI[i].x, restI[i].y); } ctx.stroke();
+      ctx.beginPath(); for (i = 0; i <= M; i++) { if (i) ctx.lineTo(restO[i].x, restO[i].y); else ctx.moveTo(restO[i].x, restO[i].y); } ctx.stroke(); ctx.setLineDash([]);
       quads.sort(function (a, b) { return b.depth - a.depth; });
-      for (i = 0; i < quads.length; i++) { var q = quads[i], hm = q.h; fillQuad(q.p, hm > 0 ? crest(hm, 0.75 + 0.25 * hm) : 'rgba(170,120,30,' + (0.7 + 0.25 * hm) + ')', hm > 0.2 ? white(0.35 + 0.5 * hm) : amber(0.5)); }
+      for (i = 0; i < quads.length; i++) { var q = quads[i], hm = q.h; fillQuad(q.p, hm > 0 ? crest(hm, 0.8 + 0.2 * hm) : 'rgba(150,105,25,' + (0.8 + 0.2 * hm) + ')', hm > 0.15 ? white(0.4 + 0.5 * hm) : amber(0.55)); }
+      // 변위 표시선: 정지 위치 → 현재 막 (일정 간격)
+      ctx.lineWidth = 1; for (i = 0; i <= M; i += Math.round(M / 26)) { var uu = i / M, cc = this.coil(uu), hh = this.wave(uu, t, up) * this.rad(uu) * 0.86 * 1.7; var p0 = cam.proj(cc), p1 = cam.proj([cc[0], cc[1], cc[2] + hh]); ctx.strokeStyle = hh > 0 ? white(0.45) : amber(0.45); ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke(); }
       // 최대 응답 글로우
       var pc = this.coil(up), pk = cam.proj([pc[0], pc[1], pc[2] + 0.1]);
       var g = ctx.createRadialGradient(pk.x, pk.y, 0, pk.x, pk.y, S * 0.16); g.addColorStop(0, amber(0.35)); g.addColorStop(0.5, amber(0.10)); g.addColorStop(1, amber(0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -581,8 +588,8 @@
     draw: function (dt, t) {
       var k = (t % (2 * this.per)) / this.per; k = k < 1 ? k : 2 - k; k = smooth(k);
       var f = k * (this.N - 1), i = Math.floor(f), fr = f - i, a = this.frames[Math.min(this.N - 1, i)], b = this.frames[Math.min(this.N - 1, i + 1)], ga = ctx.globalAlpha;
-      if (a.complete && a.naturalWidth) { ctx.globalAlpha = ga * (1 - fr); ctx.drawImage(a, this.x, this.y, this.w, this.h); }
-      if (b.complete && b.naturalWidth) { ctx.globalAlpha = ga * fr; ctx.drawImage(b, this.x, this.y, this.w, this.h); }
+      if (a.complete && a.naturalWidth) ctx.drawImage(a, this.x, this.y, this.w, this.h);
+      if (b.complete && b.naturalWidth && fr > 0.02) { ctx.globalAlpha = ga * fr; ctx.drawImage(b, this.x, this.y, this.w, this.h); }
       ctx.globalAlpha = ga;
       var load = 0.25 + 0.75 * k, hx = this.x + this.w * (0.53 - 0.02 * k), hy = this.y + this.h * (0.26 - 0.03 * k), R = this.h * 0.09;
       var g = ctx.createRadialGradient(hx, hy, 0, hx, hy, R); g.addColorStop(0, heat(load, 0.55)); g.addColorStop(0.6, heat(load * 0.6, 0.25)); g.addColorStop(1, heat(0, 0)); ctx.fillStyle = g; ctx.fillRect(hx - R, hy - R, 2 * R, 2 * R);
