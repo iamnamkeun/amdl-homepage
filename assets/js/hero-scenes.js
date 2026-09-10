@@ -8,7 +8,7 @@
   var canvas = document.getElementById('hero-canvas');
   if (!canvas) return;
   var ctx = canvas.getContext('2d', { alpha: true });
-  var video = document.getElementById('hero-video');
+  var videos = document.querySelectorAll('video.hero-video');
   var capEl = document.getElementById('hero-scene-name');
   var capWrap = document.getElementById('hero-scene-cap');
 
@@ -50,19 +50,21 @@
   }
   function imgList(attr) { var v = canvas.getAttribute(attr); return v ? v.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : []; }
 
-  /* ================= wildfire: 실제 산불 영상 ================= */
-  var wildfire = {
-    type: 'video', el: video,
-    ko: '산불 · 확산 예측 및 시설물 취약성 연구', en: 'Wildfire · spread prediction & facility vulnerability',
-    init: function () {},
-    show: function (alpha) {
-      if (!this.el) return;
-      this.el.style.opacity = alpha;
-      if (alpha > 0.01) { if (this.el.paused && !REDUCE) { var p = this.el.play(); if (p && p.catch) p.catch(function () {}); } }
-      else if (!this.el.paused) this.el.pause();
-    },
-    draw: function () {}
-  };
+  /* ================= 영상 장면(무음 반복): <video id="hero-video-NAME" class="hero-video"> ================= */
+  function videoScene(name, ko, en) {
+    return { type: 'video', el: document.getElementById('hero-video-' + name), ko: ko, en: en, init: function () {}, draw: function () {},
+      show: function (alpha) {
+        if (!this.el) return;
+        this.el.style.opacity = alpha;
+        if (alpha > 0.01) { if (this.el.paused && !REDUCE) { var p = this.el.play(); if (p && p.catch) p.catch(function () {}); } }
+        else if (!this.el.paused) this.el.pause();
+      } };
+  }
+  var wildfire = videoScene('wildfire', '산불 · 확산 예측 및 시설물 취약성 연구', 'Wildfire · spread prediction & facility vulnerability');
+  var headvideo = videoScene('head', '두개골·뇌 유한요소 모델 · 진동 전달 해석 (연구실 제작 영상)', 'Skull–brain finite-element model · vibration transmission (lab footage)');
+  var earvideo = videoScene('ear', '내이 CT·미로(달팽이관·반고리관) 모델 · 전정계·멀미 연구', 'Inner-ear CT & labyrinth model · vestibular system & motion sickness');
+  var shouldervideo = videoScene('sim', '근골격 동적 시뮬레이션 · 어깨 역학', 'Musculoskeletal dynamic simulation · shoulder mechanics');
+  var exovideo = videoScene('exo', '발목 엑소부츠 보행 실험 · 동작 예측', 'Ankle exoboot walking experiment · motion prediction');
 
   /* ---------------- 3D 공용: 카메라(z 위, y 깊이), 조명, 튜브 메시 ---------------- */
   function Cam(cx, cy, scale, yaw, tilt, f) { this.cx = cx; this.cy = cy; this.scale = scale; this.f = f; this.cy0 = Math.cos(yaw); this.sy0 = Math.sin(yaw); this.ct = Math.cos(tilt); this.st = Math.sin(tilt); }
@@ -95,7 +97,7 @@
 
   /* ================= cochlea: 내이 미로 — 3D 음영 달팽이관(달팽이집 형태) + 반고리관 + 기저막 진행파 ================= */
   var cochlea = {
-    ko: '달팽이관 기저막 진행파 · 골전도 청각 연구', en: 'Basilar-membrane traveling wave · bone-conduction hearing',
+    dim: 0.62, ko: '달팽이관 기저막 진행파 · 골전도 청각 연구', en: 'Basilar-membrane traveling wave · bone-conduction hearing',
     init: function () {
       var S = Math.min(W, HV);
       this.turns = 2.6; this.M = MOBILE ? 90 : 170;
@@ -543,8 +545,8 @@
   };
 
   /* ================= 엔진 ================= */
-  var registry = { wildfire: wildfire, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
-  var names = (canvas.getAttribute('data-scenes') || 'cochlea,wildfire,shoulder,exoboot,skull,vestibular').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (s !== 'wildfire' || video); });
+  var registry = { wildfire: wildfire, headvideo: headvideo, earvideo: earvideo, shouldervideo: shouldervideo, exovideo: exovideo, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
+  var names = (canvas.getAttribute('data-scenes') || 'cochlea,headvideo,exovideo,shouldervideo,wildfire,earvideo').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
   var scenes = names.map(function (n) { return registry[n]; });
   if (!scenes.length) return;
   var cur = 0, sceneT = 0, last = 0, running = true, lastLang = '';
@@ -569,7 +571,7 @@
   function present(s, dt, t, alpha) {
     if (s.type === 'video') { s.show(alpha); return; }
     if (alpha <= 0.01) return;
-    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.save(); ctx.globalAlpha = alpha * (s.dim || 0.9);
     if (!s.full && WX) { ctx.translate(WX, 0); W = FW - WX; }
     s.draw(dt, t); W = FW; ctx.restore();
   }
@@ -600,7 +602,7 @@
   document.addEventListener('visibilitychange', function () {
     running = !document.hidden;
     if (running) { last = performance.now(); requestAnimationFrame(frame); }
-    else if (video && !video.paused) video.pause();
+    else videos.forEach(function (v) { if (!v.paused) v.pause(); });
   });
   last = performance.now(); requestAnimationFrame(frame);
 })();
