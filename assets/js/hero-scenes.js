@@ -14,7 +14,7 @@
 
   var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var MOBILE = window.matchMedia('(max-width: 760px)').matches;
-  var DUR = 12, FADE = 2.0;
+  var DUR = 15, FADE = 3.0;
   var W = 0, H = 0, HV = 0, DPR = 1, ready = false; // HV: 실제 보이는 높이
   var FW = 0, WX = 0, COMPACT = false;               // 낮은 히어로(서브페이지)는 장면을 오른쪽 영역에 배치: W=유효 폭, WX=x 오프셋
 
@@ -97,11 +97,11 @@
 
   /* ================= cochlea: 내이 미로 — 3D 음영 달팽이관(달팽이집 형태) + 반고리관 + 기저막 진행파 ================= */
   var cochlea = {
-    dim: 0.62, ko: '달팽이관 기저막 진행파 · 골전도 청각 연구', en: 'Basilar-membrane traveling wave · bone-conduction hearing',
+    dim: 0.5, ko: '달팽이관 기저막 진행파 · 골전도 청각 연구', en: 'Basilar-membrane traveling wave · bone-conduction hearing',
     init: function () {
       var S = Math.min(W, HV);
       this.turns = 2.6; this.M = MOBILE ? 90 : 170;
-      this.cam = new Cam(MOBILE ? W * 0.5 : W * 0.47, MOBILE ? HV * 0.55 : HV * 0.56, S * (MOBILE ? 0.26 : 0.24), 0.55, 1.05, 5.5);
+      this.cam = new Cam(MOBILE ? W * 0.5 : W * 0.50, MOBILE ? HV * 0.55 : HV * 0.56, S * (MOBILE ? 0.24 : 0.21), 0.55, 1.05, 5.5);
       var self = this, cam = this.cam;
       this.coil = function (u) { var th = u * self.turns * Math.PI * 2, r = 1.0 - 0.68 * u; return [r * Math.cos(th), r * Math.sin(th), 1.05 * u]; };
       this.rad = function (u) { return 0.31 - 0.17 * u; };
@@ -140,17 +140,17 @@
       this.pStapes2 = cam.proj([b0[0] - this.baseDir[0] * 0.75, b0[1] - this.baseDir[1] * 0.75, b0[2] - this.baseDir[2] * 0.75]);
     },
     wave: function (u, t, up) {
-      var env = u <= up ? Math.exp(-Math.pow((u - up) / 0.24, 2)) : Math.exp(-Math.pow((u - up) / 0.06, 2));
-      return env * Math.sin(2 * Math.PI * (u * 3 + u * u * 11) - t * 7);
+      var env = u <= up ? Math.exp(-Math.pow((u - up) / 0.30, 2)) : Math.exp(-Math.pow((u - up) / 0.09, 2));
+      return env * Math.sin(2 * Math.PI * (u * 1.2 + u * u * 3.2) - t * 1.5);
     },
     draw: function (dt, t) {
-      var up = 0.16 + 0.66 * (0.5 + 0.5 * Math.sin(t * 0.28)), cam = this.cam, M = this.M, S = Math.min(W, HV);
+      var up = 0.22 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.09)), cam = this.cam, M = this.M, S = Math.min(W, HV);
       ctx.drawImage(this.back.c, 0, 0, W, H);
       // 기저막 리본(튜브 내부, 방사 방향으로 걸쳐진 막) — 진행파 변위를 z로
       var quads = [], SL = 4, prev = null;
       for (var i = 0; i <= M; i++) {
         var u = i / M, c = this.coil(u), th = u * this.turns * Math.PI * 2, er = [Math.cos(th), Math.sin(th), 0], a = this.rad(u) * 0.86, h = this.wave(u, t, up), row = [];
-        for (var j = 0; j <= SL; j++) { var sv = -1 + 2 * j / SL, z = h * a * 0.85 * (1 - sv * sv); var p = cam.proj([c[0] + er[0] * a * sv, c[1] + er[1] * a * sv, c[2] + z]); row.push(p); }
+        for (var j = 0; j <= SL; j++) { var sv = -1 + 2 * j / SL, z = h * a * 1.15 * (1 - sv * sv); var p = cam.proj([c[0] + er[0] * a * sv, c[1] + er[1] * a * sv, c[2] + z]); row.push(p); }
         if (prev) for (j = 0; j < SL; j++) quads.push({ p: [prev[j], prev[j + 1], row[j + 1], row[j]], depth: (prev[j].depth + row[j + 1].depth) / 2, h: h });
         prev = row;
       }
@@ -161,13 +161,13 @@
       var g = ctx.createRadialGradient(pk.x, pk.y, 0, pk.x, pk.y, S * 0.16); g.addColorStop(0, amber(0.35)); g.addColorStop(0.5, amber(0.10)); g.addColorStop(1, amber(0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       ctx.drawImage(this.front.c, 0, 0, W, H);      // 반투명 앞면(유리 같은 뼈 벽)
       // 등골(피스톤) — 난원창(기저부 입구)을 밀어 넣음
-      var ps = this.pStapes, p2 = this.pStapes2, dx = ps.x - p2.x, dy = ps.y - p2.y, dl = Math.hypot(dx, dy) || 1, tx = dx / dl, ty = dy / dl, nx = -ty, ny = tx, push = Math.sin(t * 7) * 3.5;
+      var ps = this.pStapes, p2 = this.pStapes2, dx = ps.x - p2.x, dy = ps.y - p2.y, dl = Math.hypot(dx, dy) || 1, tx = dx / dl, ty = dy / dl, nx = -ty, ny = tx, push = Math.sin(t * 1.5) * 3.5;
       var fx = ps.x + tx * push, fy = ps.y + ty * push, fw = S * 0.05;
       ctx.lineWidth = 4; ctx.strokeStyle = white(0.9); ctx.beginPath(); ctx.moveTo(fx - nx * fw, fy - ny * fw); ctx.lineTo(fx + nx * fw, fy + ny * fw); ctx.stroke();
       var hx = fx - tx * S * 0.07, hy = fy - ty * S * 0.07;
       ctx.lineWidth = 2.5; ctx.strokeStyle = white(0.7); ctx.beginPath(); ctx.moveTo(fx - nx * fw * 0.8, fy - ny * fw * 0.8); ctx.lineTo(hx, hy); ctx.lineTo(fx + nx * fw * 0.8, fy + ny * fw * 0.8); ctx.stroke();
       ctx.fillStyle = white(0.95); ctx.beginPath(); ctx.arc(hx, hy, 4.5, 0, Math.PI * 2); ctx.fill();
-      var per = 2 * Math.PI / 7, ph = (t % per) / per, ba = Math.atan2(-ty, -tx);
+      var per = 2 * Math.PI / 1.5, ph = (t % per) / per, ba = Math.atan2(-ty, -tx);
       for (var r = 0; r < 4; r++) { var rr = (ph + r / 4) % 1; ctx.beginPath(); ctx.arc(hx, hy, 8 + rr * S * 0.09, ba - 0.6, ba + 0.6); ctx.strokeStyle = white(0.55 * (1 - rr)); ctx.lineWidth = 1.3; ctx.stroke(); }
       // 라벨
       label(L('음파 (등골 → 난원창)', 'sound (stapes → oval window)'), hx - tx * S * 0.10, hy - ty * S * 0.10 + 4, tx > 0 ? 'right' : 'left', 0.7);
@@ -335,7 +335,7 @@
 
   /* ================= exoboot: 발목 엑소부츠 — 보행 주기와 보조 토크 ================= */
   var exoboot = {
-    ko: '발목 엑소부츠 · 보행 보조 토크 제어', en: 'Ankle exoboot · walking-assist torque control',
+    dim: 0.85, ko: '발목 엑소부츠 · 보행 보조 토크 제어', en: 'Ankle exoboot · walking-assist torque control',
     init: function () {
       var S = Math.min(W, HV);
       this.u = S * (MOBILE ? 0.20 : 0.15);                       // 하퇴(정강이) 길이 단위
@@ -544,9 +544,85 @@
     }
   };
 
+  /* ================= headmodel: 연구실 두개골·뇌 유한요소 모델(홍보 영상 형상) + 느린 진동 전파 ================= */
+  var headmodel = {
+    dim: 0.92, ko: '두개골·뇌 유한요소 모델 · 진동 전달 해석 (tVAS)', en: 'Skull–brain finite-element model · vibration transmission (tVAS)',
+    init: function () {
+      if (!this.im) this.im = loadImages(['assets/img/hero/head.webp'])[0];
+      var S = Math.min(W, HV); this.h = S * (MOBILE ? 0.70 : 0.82); this.w = this.h * 756 / 540;
+      this.x = (MOBILE ? W * 0.5 : W * 0.50) - this.w * 0.42; this.y = HV * 0.54 - this.h / 2;
+      this.act = [[0.665, 0.56], [0.42, 0.10]]; this.L = this.h * 0.55;
+    },
+    draw: function (dt, t) {
+      if (!this.im.complete || !this.im.naturalWidth) return;
+      ctx.drawImage(this.im, this.x, this.y, this.w, this.h);
+      var per = 5.0, ph = (t % per) / per;
+      for (var q = 0; q < 2; q++) {
+        var ax = this.x + this.act[q][0] * this.w, ay = this.y + this.act[q][1] * this.h, pulse = 0.5 + 0.5 * Math.sin(t * 1.26 - q);
+        var g = ctx.createRadialGradient(ax, ay, 0, ax, ay, this.h * 0.14); g.addColorStop(0, amber(0.30 + 0.25 * pulse)); g.addColorStop(1, amber(0)); ctx.fillStyle = g; ctx.fillRect(ax - this.h * 0.15, ay - this.h * 0.15, this.h * 0.3, this.h * 0.3);
+        ctx.fillStyle = amber(1); ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = white(0.85); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(ax, ay, 9, 0, Math.PI * 2); ctx.stroke();
+        for (var r = 0; r < 3; r++) { var rr = (ph + r / 3) % 1; ctx.beginPath(); ctx.arc(ax, ay, 12 + rr * this.L, 0, Math.PI * 2); ctx.strokeStyle = amber(0.38 * (1 - rr)); ctx.lineWidth = 1.2; ctx.stroke(); }
+      }
+      label('40 Hz tVAS ' + L('(유양돌기)', '(mastoid)'), this.x + this.act[0][0] * this.w + 14, this.y + this.act[0][1] * this.h + 24, 'left', 0.7);
+      label('40 Hz tVAS ' + L('(정수리)', '(vertex)'), this.x + this.act[1][0] * this.w, this.y + this.act[1][1] * this.h - 16, 'center', 0.7);
+      label(L('두개골 → 뇌 진동 전달 (유한요소 해석)', 'skull → brain vibration transmission (FE)'), this.x + this.w / 2, this.y + this.h + 22, 'center', 0.7);
+    }
+  };
+
+  /* ================= shouldermodel: 연구실 근골격 모델(홍보 영상 형상) — 느린 외전 왕복 + 관절 응력 ================= */
+  var shouldermodel = {
+    dim: 0.92, ko: '어깨 근골격 모델 · 외전 운동과 관절 응력', en: 'Shoulder musculoskeletal model · abduction & joint stress', N: 21, per: 7,
+    init: function () {
+      if (!this.frames) { var list = []; for (var i = 0; i < this.N; i++) list.push('assets/img/hero/shoulder_' + (i < 10 ? '0' : '') + i + '.webp'); this.frames = loadImages(list); }
+      var S = Math.min(W, HV); this.h = S * (MOBILE ? 0.80 : 0.88); this.w = this.h * 870 / 890;
+      this.x = (MOBILE ? W * 0.5 : W * 0.50) - this.w / 2; this.y = HV * 0.55 - this.h / 2;
+      this.bar = { x: W * (MOBILE ? 0.84 : 0.66), y: HV * 0.72, w: 10, h: Math.min(90, HV * 0.12) };
+    },
+    draw: function (dt, t) {
+      var k = (t % (2 * this.per)) / this.per; k = k < 1 ? k : 2 - k; k = smooth(k);
+      var f = k * (this.N - 1), i = Math.floor(f), fr = f - i, a = this.frames[Math.min(this.N - 1, i)], b = this.frames[Math.min(this.N - 1, i + 1)], ga = ctx.globalAlpha;
+      if (a.complete && a.naturalWidth) { ctx.globalAlpha = ga * (1 - fr); ctx.drawImage(a, this.x, this.y, this.w, this.h); }
+      if (b.complete && b.naturalWidth) { ctx.globalAlpha = ga * fr; ctx.drawImage(b, this.x, this.y, this.w, this.h); }
+      ctx.globalAlpha = ga;
+      var load = 0.25 + 0.75 * k, hx = this.x + this.w * (0.53 - 0.02 * k), hy = this.y + this.h * (0.26 - 0.03 * k), R = this.h * 0.09;
+      var g = ctx.createRadialGradient(hx, hy, 0, hx, hy, R); g.addColorStop(0, heat(load, 0.55)); g.addColorStop(0.6, heat(load * 0.6, 0.25)); g.addColorStop(1, heat(0, 0)); ctx.fillStyle = g; ctx.fillRect(hx - R, hy - R, 2 * R, 2 * R);
+      ctx.strokeStyle = white(0.5); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(hx, hy, R * 0.55, 0, Math.PI * 2); ctx.stroke();
+      var deg = Math.round(20 + 65 * k);
+      label(L('상완와 관절 접촉 응력', 'glenohumeral contact stress'), hx - R * 0.8, hy - R * 0.9, 'right', 0.65);
+      label(L('외전 ', 'abduction ') + deg + '°', hx - R * 0.8, hy - R * 0.9 + 16, 'right', 0.75);
+      label(L('근골격 동적 시뮬레이션 (회전근개·삼각근)', 'musculoskeletal dynamic simulation (rotator cuff · deltoid)'), this.x + this.w / 2, this.y + this.h + 20, 'center', 0.7);
+      var bb = this.bar; for (var q = 0; q < 24; q++) { ctx.fillStyle = heat(1 - q / 23, 0.9); ctx.fillRect(bb.x, bb.y + bb.h * q / 24, bb.w, bb.h / 24 + 1); }
+      label('von Mises', bb.x + 15, bb.y + 10, 'left', 0.55); label('0', bb.x + 15, bb.y + bb.h, 'left', 0.5);
+    }
+  };
+
+  /* ================= earmodel: 연구실 내이 미로 모델(홍보 영상 형상) — 느린 머리 기울기·감각 불일치 ================= */
+  var earmodel = {
+    dim: 0.92, ko: '내이 미로(반고리관·달팽이관) 모델 · 전정계·멀미 연구', en: 'Inner-ear labyrinth model · vestibular system & motion sickness',
+    init: function () {
+      if (!this.im) this.im = loadImages(['assets/img/hero/ear.webp'])[0];
+      var S = Math.min(W, HV); this.h = S * (MOBILE ? 0.62 : 0.72); this.w = this.h * 470 / 470;
+      this.c = { x: MOBILE ? W * 0.5 : W * 0.50, y: HV * 0.54 };
+      this.gauge = MOBILE ? { x: W * 0.08, y: HV * 0.90, w: W * 0.84 } : COMPACT ? { x: W * 0.04, y: HV * 0.80, w: W * 0.30 } : { x: W * 0.07, y: HV * 0.80, w: W * 0.28 };
+    },
+    draw: function (dt, t) {
+      if (!this.im.complete || !this.im.naturalWidth) return;
+      var roll = 0.11 * Math.sin(t * 0.45), vis = 0.11 * Math.sin(t * 0.45 - 1.5), c = this.c, h = this.h;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(roll); ctx.drawImage(this.im, -this.w / 2, -h / 2, this.w, h); ctx.restore();
+      ctx.setLineDash([3, 6]); ctx.strokeStyle = white(0.28); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c.x, c.y - h * 0.62); ctx.lineTo(c.x, c.y + h * 0.62); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = amber(0.75); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x - Math.sin(roll) * h * 0.6, c.y - Math.cos(roll) * h * 0.6); ctx.stroke();
+      var hy = c.y + h * 0.70; ctx.strokeStyle = white(0.55); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(c.x - h * 0.55, hy + Math.tan(vis) * h * 0.55); ctx.lineTo(c.x + h * 0.55, hy - Math.tan(vis) * h * 0.55); ctx.stroke();
+      label(L('전정 입력 · 머리 기울기 ', 'vestibular input · head tilt ') + Math.round(roll * 180 / Math.PI) + '°', c.x, c.y - h * 0.68, 'center', 0.7);
+      label(L('시각 입력 · 수평선 ', 'visual input · horizon ') + Math.round(vis * 180 / Math.PI) + '°', c.x, hy + 20, 'center', 0.6);
+      var conf = Math.abs(roll - vis) / 0.22, gg = this.gauge;
+      ctx.fillStyle = white(0.12); ctx.fillRect(gg.x, gg.y, gg.w, 6); ctx.fillStyle = heat(conf, 0.95); ctx.fillRect(gg.x, gg.y, gg.w * clamp01(conf), 6);
+      label(L('감각 불일치 → 멀미 유발도', 'sensory conflict → sickness'), gg.x, gg.y - 8, 'left', 0.65);
+    }
+  };
+
   /* ================= 엔진 ================= */
-  var registry = { wildfire: wildfire, headvideo: headvideo, earvideo: earvideo, shouldervideo: shouldervideo, exovideo: exovideo, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
-  var names = (canvas.getAttribute('data-scenes') || 'cochlea,headvideo,exovideo,shouldervideo,wildfire,earvideo').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
+  var registry = { wildfire: wildfire, headmodel: headmodel, shouldermodel: shouldermodel, earmodel: earmodel, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
+  var names = (canvas.getAttribute('data-scenes') || 'cochlea,headmodel,shouldermodel,exoboot,wildfire,earmodel').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
   var scenes = names.map(function (n) { return registry[n]; });
   if (!scenes.length) return;
   var cur = 0, sceneT = 0, last = 0, running = true, lastLang = '';

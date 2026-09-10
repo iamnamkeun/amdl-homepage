@@ -736,3 +736,4 @@ body { line-height: 1.72; letter-spacing: -0.004em; }
 /* 서브페이지 히어로: 장면 위 텍스트 가독성 */
 .page-hero .hero-shade { background: linear-gradient(90deg, rgba(16,18,22,0.72) 0%, rgba(16,18,22,0.42) 50%, rgba(16,18,22,0.22) 100%), linear-gradient(180deg, rgba(16,18,22,0.30) 0%, rgba(16,18,22,0) 40%, rgba(16,18,22,0.35) 100%); }
 .page-hero .hero-scene-cap { bottom: 14px; }
+
