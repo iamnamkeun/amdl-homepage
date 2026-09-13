@@ -56,7 +56,7 @@
       show: function (alpha) {
         if (!this.el) return;
         this.el.style.opacity = alpha;
-        if (alpha > 0.01) { if (this.el.paused && !REDUCE) { var p = this.el.play(); if (p && p.catch) p.catch(function () {}); } }
+        if (alpha > 0.01) { if (this.el.paused && !REDUCE) { if (this.el.currentTime > 0.5) { try { this.el.currentTime = 0; } catch (e) {} } var p = this.el.play(); if (p && p.catch) p.catch(function () {}); } }
         else if (!this.el.paused) this.el.pause();
       } };
   }
@@ -631,7 +631,7 @@
 
   /* ================= 엔진 ================= */
   var registry = { wildfire: wildfire, hearing: hearing, brain: brainvideo, headmodel: headmodel, shouldermodel: shouldermodel, earmodel: earmodel, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
-  var names = (canvas.getAttribute('data-scenes') || 'hearing,brain,shouldermodel,exoboot,wildfire,earmodel').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
+  var names = (canvas.getAttribute('data-scenes') || 'hearing,wildfire,brain,shouldermodel,exoboot,earmodel').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
   var scenes = names.map(function (n) { return registry[n]; });
   if (!scenes.length) return;
   var cur = 0, sceneT = 0, last = 0, running = true, lastLang = '';
@@ -667,10 +667,11 @@
     sceneT += dt;
     ctx.clearRect(0, 0, W, H);
     var s = scenes[cur], t = now / 1000, nxt = scenes[(cur + 1) % scenes.length];
-    if (scenes.length > 1 && sceneT > DUR - FADE) {
-      var k = smooth((sceneT - (DUR - FADE)) / FADE);
+    var dur = (s.type === 'video' && s.el && isFinite(s.el.duration) && s.el.duration > 1) ? Math.max(DUR, s.el.duration) : DUR;   // 영상은 한 편이 끝날 때 전환
+    if (scenes.length > 1 && sceneT > dur - FADE) {
+      var k = smooth((sceneT - (dur - FADE)) / FADE);
       present(s, dt, t, 1 - k); present(nxt, dt, t, k);
-      if (sceneT >= DUR) { cur = (cur + 1) % scenes.length; sceneT = 0; caption(cur); }
+      if (sceneT >= dur) { cur = (cur + 1) % scenes.length; sceneT = 0; caption(cur); }
     } else {
       present(s, dt, t, 1);
       scenes.forEach(function (o) { if (o !== s && o.type === 'video') o.show(0); });
