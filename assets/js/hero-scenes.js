@@ -633,7 +633,7 @@
   };
 
   /* ================= 엔진 ================= */
-  var registry = { wildfire: wildfire, hearing: hearing, brain: brainvideo, shoulder: shouldervid, exoboot: exovid, innerear: innerearvid, headmodel: headmodel, shouldermodel: shouldermodel, earmodel: earmodel, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
+  var registry = { wildfire: wildfire, hearing: hearing, brain: brainvideo, shoulder: shouldervid, exoboot: exovid, innerear: innerearvid, headmodel: headmodel, shouldermodel: shouldermodel, earmodel: earmodel, cochlea: cochlea, shouldercanvas: shoulder, skull: skull, exocanvas: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
   var names = (canvas.getAttribute('data-scenes') || 'hearing,wildfire,brain,shoulder,exoboot,innerear').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
   var scenes = names.map(function (n) { return registry[n]; });
   if (!scenes.length) return;
