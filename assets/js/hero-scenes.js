@@ -61,6 +61,8 @@
       } };
   }
   var wildfire = videoScene('wildfire', '산불 · 확산 예측 및 시설물 취약성 연구', 'Wildfire · spread prediction & facility vulnerability');
+  var hearing = videoScene('hearing', '우리는 어떻게 듣는가 · 달팽이관 기저막과 유모세포 — 골전도 청각 연구', 'How we hear · basilar membrane & hair cells — bone-conduction hearing');
+  var brainvideo = videoScene('brain', '뇌척수액 흐름과 두개골·뇌 유한요소 모델 (tVAS)', 'CSF flow & skull–brain finite-element model (tVAS)');
   var headvideo = videoScene('head', '두개골·뇌 유한요소 모델 · 진동 전달 해석 (연구실 제작 영상)', 'Skull–brain finite-element model · vibration transmission (lab footage)');
   var earvideo = videoScene('ear', '내이 CT·미로(달팽이관·반고리관) 모델 · 전정계·멀미 연구', 'Inner-ear CT & labyrinth model · vestibular system & motion sickness');
   var shouldervideo = videoScene('sim', '근골격 동적 시뮬레이션 · 어깨 역학', 'Musculoskeletal dynamic simulation · shoulder mechanics');
@@ -628,8 +630,8 @@
   };
 
   /* ================= 엔진 ================= */
-  var registry = { wildfire: wildfire, headmodel: headmodel, shouldermodel: shouldermodel, earmodel: earmodel, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
-  var names = (canvas.getAttribute('data-scenes') || 'cochlea,headmodel,shouldermodel,exoboot,wildfire,earmodel').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
+  var registry = { wildfire: wildfire, hearing: hearing, brain: brainvideo, headmodel: headmodel, shouldermodel: shouldermodel, earmodel: earmodel, cochlea: cochlea, shoulder: shoulder, skull: skull, exoboot: exoboot, vestibular: vestibular, photos: photos, papers: papers, mosaic: mosaic };
+  var names = (canvas.getAttribute('data-scenes') || 'hearing,brain,shouldermodel,exoboot,wildfire,earmodel').split(',').map(function (s) { return s.trim(); }).filter(function (s) { return registry[s] && (registry[s].type !== 'video' || registry[s].el); });
   var scenes = names.map(function (n) { return registry[n]; });
   if (!scenes.length) return;
   var cur = 0, sceneT = 0, last = 0, running = true, lastLang = '';
